@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --color-brand-black: #000000;
+  --color-brand-white: #FFFFFF;
+  --color-brand-gray-light: #F5F5F5;
+  --color-brand-gray-med: #E5E5E5;
+  --color-brand-gray-dark: #737373;
+  --color-neutral-150: #d4d4d4;
+  --color-neutral-250: #a3a3a3;
+  --color-neutral-350: #8f8f8f;
+  --color-neutral-450: #707070;
+}
+
+@layer base {
+  body {
+    background-color: #FFFFFF;
+    color: #000000;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    img {
+      filter: none !important;
+    }
+  }
+}
+
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility animate-slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@utility animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
