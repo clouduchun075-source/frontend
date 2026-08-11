@@ -1,21 +1,70 @@
 import { useState, useEffect } from 'react';
-import { User, Package, Heart, Settings, LogOut, ChevronRight, Mail, Phone } from 'lucide-react';
+import { User, Package, Heart, Settings, LogOut, ChevronRight, Mail, Phone, MapPin, Trash2, X, Clock, MessageCircle, XCircle } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { getProducts } from '../data/api';
-import type { Product } from '../data/api';
+import { useCart, ORDER_CANCEL_WINDOW_MS } from '../context/CartContext';
+import type { Order } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { getProducts, getAddresses, deleteAddress } from '../data/api';
+import type { Product, SavedAddress } from '../data/api';
 import { ProductCard } from '../components/ProductCard';
+
+// Bot/support chat customers can reach a human operator through.
+const OPERATOR_TELEGRAM_URL = 'https://t.me/saywayuz_bot';
+
+const formatCountdown = (ms: number) => {
+  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const isOrderCancellable = (order: Order) => {
+  if (order.status === 'CANCELLED' || order.status === 'SHIPPED' || order.status === 'DELIVERED') return false;
+  const placedAt = order.created_at ? new Date(order.created_at).getTime() : 0;
+  if (!placedAt) return false;
+  return Date.now() - placedAt < ORDER_CANCEL_WINDOW_MS;
+};
+
+const orderRemainingMs = (order: Order) => {
+  const placedAt = order.created_at ? new Date(order.created_at).getTime() : 0;
+  if (!placedAt) return 0;
+  return ORDER_CANCEL_WINDOW_MS - (Date.now() - placedAt);
+};
 
 export const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { orders, cartCount, wishlist, formatPrice } = useCart();
-  const [activeSection, setActiveSection] = useState<'overview' | 'orders' | 'wishlist' | 'settings'>('overview');
+  const { orders, cartCount, wishlist, formatPrice, cancelOrder } = useCart();
+  const { user, loading: authLoading, signOut, updateProfile } = useAuth();
+  const [activeSection, setActiveSection] = useState<'overview' | 'orders' | 'wishlist' | 'locations' | 'settings'>('overview');
+  const [addresses, setAddresses] = useState<SavedAddress[]>([]);
   const [emailNotif, setEmailNotif] = useState(true);
   const [marketingEmails, setMarketingEmails] = useState(false);
   const [showSaveToast, setShowSaveToast] = useState(false);
   const [showSignOutConfirm, setShowSignOutConfirm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [viewOrder, setViewOrder] = useState<Order | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  const [, setTick] = useState(0);
+
+  // Re-render every second while any order is still within its cancellation
+  // window, so the countdown timers stay live.
+  useEffect(() => {
+    if (!orders.some(isOrderCancellable)) return;
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, [orders]);
+
+  const handleCancelOrder = async (orderId: string) => {
+    setConfirmCancelId(null);
+    setCancellingId(orderId);
+    const ok = await cancelOrder(orderId);
+    setCancellingId(null);
+    if (ok) {
+      setViewOrder((prev) => (prev && prev.orderId === orderId ? { ...prev, status: 'CANCELLED' } : prev));
+    }
+  };
 
   // Sync section based on tab search param or state routing
   useEffect(() => {
@@ -27,40 +76,109 @@ export const Profile = () => {
       setActiveSection('orders');
     } else if (tab === 'settings') {
       setActiveSection('settings');
+    } else if (tab === 'locations') {
+      setActiveSection('locations');
     } else if (tab === 'overview') {
       setActiveSection('overview');
     }
   }, [location]);
 
   const userInfo = {
-    name: 'Alex Mercer',
-    email: 'alex@sayway.com',
-    phone: '+1 (555) 012-3456',
-    address: '123 Fashion Ave, New York, NY 10001',
+    name: (user?.user_metadata?.full_name as string) || user?.email?.split('@')[0] || 'Guest',
+    email: user?.email || '',
+    phone: user?.phone ? `+${user.phone}` : '',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
-    memberSince: 'January 2024',
+    memberSince: user?.created_at
+      ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      : '',
     memberTier: 'BLACK LABEL',
   };
+
+  // Controlled inputs for the Settings form -- kept in sync with the real
+  // account values so "Save Changes" has something correct to persist.
+  const [nameInput, setNameInput] = useState(userInfo.name);
+  const [emailInput, setEmailInput] = useState(userInfo.email);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveError, setSaveError] = useState('');
+
+  useEffect(() => {
+    setNameInput(userInfo.name);
+    setEmailInput(userInfo.email);
+  }, [user?.id, userInfo.name, userInfo.email]);
 
   const menuItems = [
     { id: 'overview' as const, label: 'Overview', icon: User },
     { id: 'orders' as const, label: 'My Orders', icon: Package },
     { id: 'wishlist' as const, label: 'Wishlist', icon: Heart },
+    { id: 'locations' as const, label: 'Locations', icon: MapPin },
     { id: 'settings' as const, label: 'Settings', icon: Settings },
   ];
 
   const [allProductsList, setAllProductsList] = useState<Product[]>([]);
 
   useEffect(() => {
-    setAllProductsList(getProducts());
+    getProducts().then(setAllProductsList);
   }, [wishlist]); // Reload when wishlist modifications happen to sync lists
+
+  useEffect(() => {
+    if (user) getAddresses().then(setAddresses);
+  }, [user?.id]);
+
+  const handleDeleteAddress = async (id: string) => {
+    await deleteAddress(id);
+    setAddresses((prev) => prev.filter((a) => a.id !== id));
+  };
 
   const wishlistProducts = allProductsList.filter((p) => wishlist.includes(p.id));
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setSaveError('');
+    setSavingProfile(true);
+    const { error } = await updateProfile({
+      fullName: nameInput.trim(),
+      // Phone-only accounts have no email yet -- only send an email update
+      // if they actually typed one in.
+      email: emailInput.trim() || undefined,
+    });
+    setSavingProfile(false);
+    if (error) {
+      setSaveError(error);
+      setTimeout(() => setSaveError(''), 4000);
+      return;
+    }
     setShowSaveToast(true);
     setTimeout(() => setShowSaveToast(false), 2000);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-neutral-900 flex items-center justify-center transition-colors">
+        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-neutral-900 flex items-center justify-center px-4 py-16 transition-colors">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <User className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto" />
+          <div className="space-y-2">
+            <h1 className="text-lg font-black uppercase tracking-tight text-black dark:text-white">Sign In Required</h1>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Sign in or create an account to view your profile, orders and wishlist.</p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <Link to="/login" className="bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-3.5 tracking-widest hover:opacity-90">
+              Sign In
+            </Link>
+            <Link to="/signup" className="border border-neutral-200 dark:border-neutral-750 text-black dark:text-white text-xs font-bold uppercase py-3.5 tracking-widest hover:border-neutral-400">
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900 text-black dark:text-white pb-20 md:pb-12 transition-colors duration-300">
@@ -82,7 +200,7 @@ export const Profile = () => {
                 <button onClick={() => setShowSignOutConfirm(false)} className="flex-1 border border-neutral-200 dark:border-neutral-750 py-3 text-xs font-bold uppercase tracking-widest text-black dark:text-white hover:border-neutral-400 dark:hover:border-neutral-550 transition-colors">
                   Cancel
                 </button>
-                <button onClick={() => { setShowSignOutConfirm(false); navigate('/'); }} className="flex-1 bg-black dark:bg-white text-white dark:text-black py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors">
+                <button onClick={async () => { setShowSignOutConfirm(false); await signOut(); navigate('/'); }} className="flex-1 bg-black dark:bg-white text-white dark:text-black py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors">
                   Sign Out
                 </button>
               </div>
@@ -106,6 +224,117 @@ export const Profile = () => {
                 <button onClick={() => { setShowDeleteConfirm(false); navigate('/'); }} className="flex-1 bg-red-600 text-white py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors">
                   Delete
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {confirmCancelId && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmCancelId(null)} />
+            <div className="relative bg-white dark:bg-neutral-950 p-6 md:p-8 max-w-sm w-full mx-4 shadow-2xl z-10 text-center border border-neutral-100 dark:border-neutral-805 space-y-4">
+              <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/20 flex items-center justify-center mx-auto">
+                <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Cancel this order?</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{confirmCancelId} will be cancelled. This can't be undone.</p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setConfirmCancelId(null)}
+                  className="flex-1 border border-neutral-200 dark:border-neutral-750 py-3 text-xs font-bold uppercase tracking-widest text-black dark:text-white hover:border-neutral-400 dark:hover:border-neutral-550 transition-colors"
+                >
+                  No
+                </button>
+                <button
+                  onClick={() => handleCancelOrder(confirmCancelId)}
+                  disabled={cancellingId === confirmCancelId}
+                  className="flex-1 bg-red-600 text-white py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors disabled:opacity-50"
+                >
+                  {cancellingId === confirmCancelId ? 'Cancelling...' : 'Yes, Cancel'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setViewOrder(null)} />
+            <div className="relative bg-white dark:bg-neutral-950 max-w-lg w-full mx-4 shadow-2xl z-10 border border-neutral-100 dark:border-neutral-805 max-h-[85vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-5 border-b border-neutral-100 dark:border-neutral-800">
+                <div className="space-y-0.5">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">{viewOrder.orderId}</h3>
+                  <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">{viewOrder.timeAgo}</span>
+                </div>
+                <button onClick={() => setViewOrder(null)} className="p-1.5 text-neutral-400 hover:text-black dark:hover:text-white transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Status</span>
+                  <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                    viewOrder.status === 'SHIPPED' || viewOrder.status === 'DELIVERED' ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-455' :
+                    viewOrder.status === 'PROCESSING' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-455' :
+                    viewOrder.status === 'PENDING' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400' :
+                    'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
+                  }`}>
+                    {viewOrder.status}
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Items</span>
+                  {(viewOrder.items ?? []).map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-3 border border-neutral-100 dark:border-neutral-800 p-3">
+                      {item.image && (
+                        <div className="w-12 h-12 rounded-md overflow-hidden border border-neutral-200 dark:border-neutral-750 flex-shrink-0 bg-neutral-50 dark:bg-neutral-900">
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0 space-y-0.5">
+                        <p className="text-xs font-bold text-black dark:text-white truncate">{item.name}</p>
+                        <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">
+                          {[item.size, item.color].filter(Boolean).join(' · ')}{(item.size || item.color) ? ' · ' : ''}Qty {item.quantity}
+                        </p>
+                      </div>
+                      <span className="text-xs font-black text-black dark:text-white flex-shrink-0">{formatPrice(item.price * item.quantity)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-800 pt-4">
+                  <span className="text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Total</span>
+                  <span className="text-sm font-black text-black dark:text-white">{formatPrice(viewOrder.amount)}</span>
+                </div>
+
+                {isOrderCancellable(viewOrder) && (
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest uppercase">
+                    <Clock className="w-3.5 h-3.5" />
+                    Free cancellation ends in {formatCountdown(orderRemainingMs(viewOrder))}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-1">
+                  <button
+                    onClick={() => setConfirmCancelId(viewOrder.orderId)}
+                    disabled={!isOrderCancellable(viewOrder) || cancellingId === viewOrder.orderId}
+                    className="flex-1 flex items-center justify-center gap-2 border border-red-300 dark:border-red-900/50 text-red-650 dark:text-red-400 text-[10px] font-bold uppercase px-5 py-3 tracking-widest hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <XCircle className="w-3.5 h-3.5" />
+                    {cancellingId === viewOrder.orderId ? 'Cancelling...' : viewOrder.status === 'CANCELLED' ? 'Order Cancelled' : 'Cancel Order'}
+                  </button>
+                  <a
+                    href={OPERATOR_TELEGRAM_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-5 py-3 tracking-widest hover:opacity-90 transition-colors"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    Contact Operator
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -272,34 +501,63 @@ export const Profile = () => {
 
                 {orders.length > 0 ? (
                   <div className="space-y-4">
-                    {orders.map((ord) => (
-                      <div key={ord.orderId} className="border border-neutral-200 dark:border-neutral-800 p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-neutral-950 transition-colors">
-                        <div className="flex items-center space-x-4">
-                          {ord.customerAvatar && (
-                            <div className="w-10 h-10 rounded-full overflow-hidden border border-neutral-200 dark:border-neutral-750 flex-shrink-0">
-                              <img src={ord.customerAvatar} alt="" className="w-full h-full object-cover grayscale" />
+                    {orders.map((ord) => {
+                      const cancellable = isOrderCancellable(ord);
+                      return (
+                      <div
+                        key={ord.orderId}
+                        onClick={() => setViewOrder(ord)}
+                        className="border border-neutral-200 dark:border-neutral-800 p-5 flex flex-col gap-4 bg-white dark:bg-neutral-950 transition-colors cursor-pointer hover:border-neutral-400 dark:hover:border-neutral-600"
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="flex items-center space-x-4">
+                            {ord.customerAvatar && (
+                              <div className="w-10 h-10 rounded-full overflow-hidden border border-neutral-200 dark:border-neutral-750 flex-shrink-0">
+                                <img src={ord.customerAvatar} alt="" className="w-full h-full object-cover grayscale" />
+                              </div>
+                            )}
+                            <div className="space-y-0.5 text-left">
+                              <span className="text-sm font-bold text-black dark:text-white block">{ord.orderId}</span>
+                              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">{ord.timeAgo} &bull; {ord.itemsCount} {ord.itemsCount === 1 ? 'item' : 'items'}</span>
                             </div>
-                          )}
-                          <div className="space-y-0.5 text-left">
-                            <span className="text-sm font-bold text-black dark:text-white block">{ord.orderId}</span>
-                            <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">{ord.timeAgo} &bull; {ord.itemsCount} {ord.itemsCount === 1 ? 'item' : 'items'}</span>
+                          </div>
+                          <div className="flex items-center space-x-4 justify-between md:justify-end">
+                            <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
+                              ord.status === 'SHIPPED' || ord.status === 'DELIVERED' ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-455' :
+                              ord.status === 'PROCESSING' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-455' :
+                              ord.status === 'PENDING' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400' :
+                              'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
+                            }`}>
+                              {ord.status}
+                            </span>
+                            <span className="text-sm font-black text-black dark:text-white">
+                              {formatPrice(ord.amount)}
+                            </span>
                           </div>
                         </div>
-                        <div className="flex items-center space-x-4 justify-between md:justify-end">
-                          <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
-                            ord.status === 'SHIPPED' || ord.status === 'DELIVERED' ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-455' :
-                            ord.status === 'PROCESSING' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-455' :
-                            ord.status === 'PENDING' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400' :
-                            'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
-                          }`}>
-                            {ord.status}
-                          </span>
-                          <span className="text-sm font-black text-black dark:text-white">
-                            {formatPrice(ord.amount)}
-                          </span>
-                        </div>
+
+                        {cancellable && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex items-center justify-between gap-3 border-t border-neutral-100 dark:border-neutral-800 pt-3"
+                          >
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest uppercase">
+                              <Clock className="w-3.5 h-3.5" />
+                              Cancel within {formatCountdown(orderRemainingMs(ord))}
+                            </span>
+                            <button
+                              onClick={() => setConfirmCancelId(ord.orderId)}
+                              disabled={cancellingId === ord.orderId}
+                              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 disabled:opacity-50"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              {cancellingId === ord.orderId ? 'Cancelling...' : 'Cancel Order'}
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="py-12 text-center space-y-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 transition-colors">
@@ -339,6 +597,45 @@ export const Profile = () => {
               </div>
             )}
 
+            {/* Locations Section */}
+            {activeSection === 'locations' && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center border-b border-neutral-100 dark:border-neutral-800 pb-3">
+                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Saved Locations</h3>
+                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{addresses.length} saved</span>
+                </div>
+
+                {addresses.length > 0 ? (
+                  <div className="space-y-3">
+                    {addresses.map((addr) => (
+                      <div key={addr.id} className="border border-neutral-200 dark:border-neutral-800 p-4 flex justify-between items-start gap-4 bg-white dark:bg-neutral-950 transition-colors">
+                        <div className="space-y-0.5 text-left">
+                          <p className="text-xs font-bold text-black dark:text-white">{addr.first_name} {addr.last_name}</p>
+                          <p className="text-[10px] text-neutral-500 dark:text-neutral-400">{addr.phone}</p>
+                          <p className="text-[10px] text-neutral-500 dark:text-neutral-400">
+                            {addr.city}, {addr.district}, {addr.neighborhood}, {addr.house_number}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteAddress(addr.id)}
+                          className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded flex-shrink-0"
+                          aria-label="Delete address"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-12 text-center space-y-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 transition-colors">
+                    <MapPin className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
+                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">No saved locations yet</p>
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 px-6">Addresses you enter at checkout will be saved here for next time.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Settings Section */}
             {activeSection === 'settings' && (
               <div className="space-y-6">
@@ -354,23 +651,21 @@ export const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1 text-left">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Full Name</label>
-                        <input type="text" defaultValue={userInfo.name} className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
+                        <input type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)} className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
                       </div>
                       <div className="space-y-1 text-left">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Email</label>
-                        <input type="email" defaultValue={userInfo.email} className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
+                        <input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="Add an email address" className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
                       </div>
                       <div className="space-y-1 text-left">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Phone</label>
-                        <input type="tel" defaultValue={userInfo.phone} className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
-                      </div>
-                      <div className="space-y-1 text-left">
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Address</label>
-                        <input type="text" defaultValue={userInfo.address} className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
+                        <input type="tel" value={userInfo.phone} disabled title="Verified via Telegram — contact support to change your number" className="w-full border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-3 py-2.5 text-xs font-semibold cursor-not-allowed" />
+                        <p className="text-[9px] text-neutral-400 dark:text-neutral-500">Verified via Telegram, can't be changed here.</p>
                       </div>
                     </div>
-                    <button onClick={handleSave} className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90 transition-colors focus:outline-none">
-                      Save Changes
+                    {saveError && <p className="text-[10px] font-bold text-red-600 dark:text-red-400">{saveError}</p>}
+                    <button onClick={handleSave} disabled={savingProfile} className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90 transition-colors focus:outline-none disabled:opacity-50">
+                      {savingProfile ? 'Saving...' : 'Save Changes'}
                     </button>
                   </div>
 

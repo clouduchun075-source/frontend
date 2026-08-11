@@ -9,8 +9,8 @@ export const Search = () => {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-  useEffect(() => { 
-    setAllProducts(getProducts()); 
+  useEffect(() => {
+    getProducts().then(setAllProducts);
   }, []);
 
   const categories = ['All', 'Outerwear', 'Knitwear', 'Accessories'];

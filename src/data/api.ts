@@ -1,3 +1,5 @@
+import { supabase } from '../lib/supabase';
+
 export interface Product {
   id: string;
   name: string; // Dynamically localized on-the-fly via t('prod_${id}_name')
@@ -16,23 +18,48 @@ export interface Product {
   stock: number;
   images?: string[];
   discount?: number;
-  rating?: number;
+}
+
+export interface ShippingAddress {
+  first_name: string;
+  last_name: string;
+  phone: string;
+  city: string;
+  district: string;
+  neighborhood: string;
+  house_number: string;
+  postal_code?: string;
+}
+
+export interface SavedAddress extends ShippingAddress {
+  id: string;
+  user_id: string;
+  created_at: string;
 }
 
 export interface Order {
   id: string;
   orderId?: string;
+  user_id?: string | null;
   customer_name: string;
   customerName?: string;
   customer_email: string;
   customerEmail?: string;
-  items: { product_id?: string; id?: string; name: string; quantity: number; price: number }[];
+  items: { product_id?: string; id?: string; name: string; quantity: number; price: number; size?: string; color?: string; image?: string }[];
   total: number;
   amount?: number;
   status: string;
   payment_method?: string;
+  shipping_address?: ShippingAddress | null;
   created_at: string;
   timeAgo?: string;
+}
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  created_at: string;
 }
 
 export interface Transaction {
@@ -44,131 +71,308 @@ export interface Transaction {
   created_at: string;
 }
 
-function load<T>(key: string, fallback: T): T {
-  try {
-    const s = localStorage.getItem(key);
-    if (s) return JSON.parse(s);
-  } catch {}
-  return fallback;
-}
-
-function save(key: string, data: unknown) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
-
 function uid(prefix: string) {
   return prefix + Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
+// Map a Supabase products row (snake_case) to the app's Product shape
+function rowToProduct(row: any): Product {
+  return {
+    id: row.id,
+    name: row.name,
+    price: Number(row.price),
+    priceLabel: row.price_label ?? undefined,
+    category: row.category,
+    brand: row.brand,
+    color: row.color,
+    size: row.size ?? [],
+    tag: row.tag,
+    subtitle: row.subtitle,
+    image: row.image,
+    description: row.description,
+    material: row.material,
+    weight: row.weight,
+    stock: row.stock,
+    images: row.images ?? undefined,
+    discount: row.discount ?? undefined,
+  };
+}
+
+function productToRow(data: Partial<Product>) {
+  return {
+    name: data.name,
+    price: data.price,
+    price_label: data.priceLabel,
+    category: data.category,
+    brand: data.brand,
+    color: data.color,
+    size: data.size,
+    tag: data.tag,
+    subtitle: data.subtitle,
+    image: data.image,
+    description: data.description,
+    material: data.material,
+    weight: data.weight,
+    stock: data.stock,
+    images: data.images,
+    discount: data.discount,
+  };
+}
+
 // ---- PRODUCTS ----
-const DEFAULT_PRODUCTS: Product[] = [
-  { id:'c1',name:'Structural Wool Coat',price:1250,category:'Outerwear',brand:'SAYWAY BLACK LABEL',color:'black',size:['S','M','L'],tag:'NEW ARRIVAL',subtitle:'Carbon Black',image:'https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&q=80&w=600',description:'Crafted from premium architectural-grade wool.',material:'100% Virgin Wool',weight:'680 GSM',stock:15,rating:4.8 },
-  { id:'c2',name:'Architectural Knit',price:890,category:'Knitwear',brand:'SAYWAY CORE',color:'white',size:['M','L','XL'],tag:null,subtitle:'Bone White',image:'https://images.unsplash.com/photo-1608256246200-53e635b5b65f?auto=format&fit=crop&q=80&w=600',description:'A structural knit piece.',material:'80% Merino Wool, 20% Cashmere',weight:'420 GSM',stock:0,rating:4.2 },
-  { id:'c3',name:'Pleated Trousers',price:540,category:'Outerwear',brand:'SAYWAY BLACK LABEL',color:'lightgray',size:['XS','S','M'],tag:null,subtitle:'Slate Gray',image:'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&q=80&w=600',description:'Precision-cut pleated trousers.',material:'97% Organic Cotton, 3% Elastane',weight:'320 GSM',stock:25,discount:20,rating:4.5 },
-  { id:'c4',name:'Technical Shell',price:920,category:'Outerwear',brand:'SAYWAY BLACK LABEL',color:'darkgray',size:['S','M','XL'],tag:'LIMITED EDITION',subtitle:'Midnight',image:'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=600',description:'High-performance technical shell jacket.',material:'100% Nylon Ripstop',weight:'280 GSM',stock:8,discount:15,rating:4.9 },
-  { id:'c5',name:'Essential Heavyweight Tee',price:180,category:'Accessories',brand:'SAYWAY CORE',color:'white',size:['XS','S','M','L','XL'],tag:null,subtitle:'Optic White',image:'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&q=80&w=600',description:'The foundation of any premium wardrobe.',material:'100% Organic Cotton',weight:'300 GSM',stock:100,rating:4.6 },
-  { id:'c6',name:'Minimalist Leather Tote',price:2100,category:'Accessories',brand:'SAYWAY BLACK LABEL',color:'black',size:['M'],tag:null,subtitle:'Matte Black',image:'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600',description:'Handcrafted from Italian full-grain leather.',material:'Full-Grain Italian Leather',weight:'N/A',stock:5,rating:5.0 },
-  { id:'c7',name:'Monolith Blazer',price:680,category:'Outerwear',brand:'SAYWAY BLACK LABEL',color:'black',size:['S','M','L'],tag:null,subtitle:'Onyx Black',image:'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=600',description:'A structured blazer with architectural shoulders.',material:'95% Wool, 5% Elastane',weight:'380 GSM',stock:0,discount:10,rating:4.4 },
-  { id:'c8',name:'Premium Oversize Hoodie',price:120,category:'Knitwear',brand:'SAYWAY CORE',color:'black',size:['XS','S','M','L','XL','XXL'],tag:'NEW ARRIVAL',subtitle:'Carbon Black',image:'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=600',description:'Crafted from architectural-grade heavyweight cotton.',material:'100% Organic Cotton',weight:'450 GSM',stock:45,rating:4.7 },
-  { id:'c9',name:'Geometric Tote',price:315,category:'Accessories',brand:'SAYWAY BLACK LABEL',color:'black',size:['OS'],tag:'LIMITED',subtitle:'Matte Black',image:'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600',description:'Geometric-structured tote.',material:'Vegan Leather',weight:'N/A',stock:3,discount:25,rating:4.3 },
-  { id:'c10',name:'Pleated Technical Pant',price:195,category:'Outerwear',brand:'SAYWAY CORE',color:'lightgray',size:['S','M','L'],tag:null,subtitle:'Stone Grey',image:'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&q=80&w=600',description:'Technical pleated pant.',material:'95% Nylon, 5% Elastane',weight:'240 GSM',stock:12,rating:4.1 },
-  { id:'c11',name:'Linear Turtle Neck',price:210,category:'Knitwear',brand:'SAYWAY CORE',color:'white',size:['XS','S','M'],tag:null,subtitle:'Pristine White',image:'https://images.unsplash.com/photo-1614975058789-41316d0e2e9c?auto=format&fit=crop&q=80&w=600',description:'A refined turtleneck.',material:'70% Merino Wool, 30% Silk',weight:'280 GSM',stock:0,rating:4.5 },
-  { id:'c12',name:'Cashmere Overcoat',price:520,category:'Outerwear',brand:'SAYWAY BLACK LABEL',color:'black',size:['S','M','L','XL'],tag:'POPULAR',subtitle:'Deep Black',image:'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=800',description:'Luxurious cashmere overcoat.',material:'100% Mongolian Cashmere',weight:'550 GSM',stock:18,rating:4.9 },
-];
-
-export function getProducts(): Product[] {
-  const products = load<Product[] | null>('sayway_products', null);
-  if (!products) { save('sayway_products', DEFAULT_PRODUCTS); return DEFAULT_PRODUCTS; }
-  // Check if we need to migrate/upgrade localStorage products to have discount and rating fields
-  let updated = false;
-  const migrated = products.map(p => {
-    const orig = DEFAULT_PRODUCTS.find(o => o.id === p.id);
-    if (orig) {
-      if (p.discount === undefined && orig.discount !== undefined) { p.discount = orig.discount; updated = true; }
-      if (p.rating === undefined && orig.rating !== undefined) { p.rating = orig.rating; updated = true; }
-      if (p.stock !== orig.stock && p.stock === undefined) { p.stock = orig.stock; updated = true; }
-    }
-    return p;
-  });
-  if (updated) { save('sayway_products', migrated); return migrated; }
-  return products;
-}
-
-export function getProductById(id: string): Product | undefined {
-  return getProducts().find(p => p.id === id);
-}
-
-export function saveProduct(data: Omit<Product, 'id'> & { id?: string }): Product {
-  const products = getProducts();
-  if (data.id) {
-    const idx = products.findIndex(p => p.id === data.id);
-    if (idx >= 0) { products[idx] = { ...products[idx], ...data } as Product; }
-    else { products.push(data as Product); }
-  } else {
-    const p = { ...data, id: uid('c') } as Product;
-    products.push(p);
+export async function getProducts(): Promise<Product[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) {
+    console.error('getProducts error:', error);
+    return [];
   }
-  save('sayway_products', products);
-  return data as Product;
+  return (data ?? []).map(rowToProduct);
 }
 
-export function deleteProduct(id: string) {
-  save('sayway_products', getProducts().filter(p => p.id !== id));
+export async function getProductById(id: string): Promise<Product | undefined> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+  if (error) {
+    console.error('getProductById error:', error);
+    return undefined;
+  }
+  return data ? rowToProduct(data) : undefined;
+}
+
+export async function saveProduct(data: Omit<Product, 'id'> & { id?: string }): Promise<Product | null> {
+  const id = data.id || uid('c');
+  const { data: row, error } = await supabase
+    .from('products')
+    .upsert({ id, ...productToRow(data) })
+    .select()
+    .single();
+  if (error) {
+    console.error('saveProduct error:', error);
+    return null;
+  }
+  return rowToProduct(row);
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  const { error } = await supabase.from('products').delete().eq('id', id);
+  if (error) console.error('deleteProduct error:', error);
+}
+
+// Uploads a product photo (dragged/selected in the Admin panel) to the
+// public `product-images` Storage bucket and returns its public URL.
+export async function uploadProductImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${uid('img-').toLowerCase()}.${ext}`;
+  const { error } = await supabase.storage.from('product-images').upload(path, file, {
+    cacheControl: '3600',
+    upsert: false,
+  });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+  return data.publicUrl;
+}
+
+// ---- SAVED ADDRESSES ----
+export async function getAddresses(): Promise<SavedAddress[]> {
+  const { data, error } = await supabase
+    .from('addresses')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('getAddresses error:', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function saveAddress(userId: string, address: ShippingAddress): Promise<SavedAddress | null> {
+  const { data, error } = await supabase
+    .from('addresses')
+    .insert({ user_id: userId, ...address })
+    .select()
+    .single();
+  if (error) {
+    console.error('saveAddress error:', error);
+    return null;
+  }
+  return data;
+}
+
+export async function deleteAddress(id: string): Promise<void> {
+  const { error } = await supabase.from('addresses').delete().eq('id', id);
+  if (error) console.error('deleteAddress error:', error);
+}
+
+// ---- PROFILES (registered users) ----
+export async function getProfiles(): Promise<Profile[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('getProfiles error:', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+async function callEdgeFunction(name: string, body: unknown) {
+  const res = await fetch(`${FUNCTIONS_URL}/${name}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${ANON_KEY}` },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string | null;
+  phone: string | null;
+  full_name: string | null;
+  created_at: string;
+  banned: boolean;
+}
+
+export async function getAdminUsers(): Promise<AdminUser[]> {
+  const data = await callEdgeFunction('admin-list-users', {});
+  return data.users ?? [];
+}
+
+export async function banUser(userId: string): Promise<void> {
+  await callEdgeFunction('admin-manage-user', { action: 'ban', userId });
+}
+
+export async function unbanUser(userId: string): Promise<void> {
+  await callEdgeFunction('admin-manage-user', { action: 'unban', userId });
+}
+
+export async function deleteUser(userId: string): Promise<void> {
+  await callEdgeFunction('admin-manage-user', { action: 'delete', userId });
+}
+
+// Tells the customer about their order's current status via the Telegram
+// bot they verified their phone with. Throws if they haven't linked
+// Telegram yet or the order has no phone on file.
+export async function notifyOrderStatus(orderId: string): Promise<void> {
+  await callEdgeFunction('notify-order-status', { orderId });
 }
 
 // ---- ORDERS ----
-export function getOrders(): Order[] {
-  return load<Order[]>('sayway_orders', []);
+export async function getOrders(): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('getOrders error:', error);
+    return [];
+  }
+  return data ?? [];
 }
 
-export function createOrder(data: Omit<Order, 'id' | 'created_at'>): Order {
-  const order: Order = { ...data, id: uid('ORD-'), created_at: new Date().toISOString() };
-  const orders = getOrders();
-  orders.push(order);
-  save('sayway_orders', orders);
-  const products = getProducts();
-  order.items.forEach(item => {
-    const p = products.find(pr => pr.id === (item.product_id || item.id));
-    if (p) p.stock = Math.max(0, p.stock - item.quantity);
-  });
-  save('sayway_products', products);
-  return order;
+// Orders belonging to one signed-in customer -- used by the storefront to
+// keep the customer's own order statuses in sync with whatever the Admin
+// panel has set (Admin edits status directly in Supabase, but the
+// customer's copy of their orders otherwise only lives in localStorage).
+export async function getOrdersByUser(userId: string): Promise<Order[]> {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('getOrdersByUser error:', error);
+    return [];
+  }
+  return data ?? [];
 }
 
-export function updateOrderStatus(orderId: string, status: string) {
-  const orders = getOrders();
-  const o = orders.find(or => or.id === orderId);
-  if (o) o.status = status;
-  save('sayway_orders', orders);
+export async function createOrder(data: Omit<Order, 'id' | 'created_at'> & { id?: string }): Promise<Order | null> {
+  // Accept a caller-provided id so the storefront and Admin panel always
+  // show the exact same order number for the same order, instead of the
+  // customer seeing one ID locally and Admin seeing a different generated one.
+  const order = { ...data, id: data.id || uid('ORD-') };
+  const { data: row, error } = await supabase.from('orders').insert(order).select().single();
+  if (error) {
+    console.error('createOrder error:', error);
+    return null;
+  }
+
+  // Decrement stock for each purchased product
+  for (const item of order.items) {
+    const productId = item.product_id || item.id;
+    if (!productId) continue;
+    const product = await getProductById(productId);
+    if (product) {
+      await supabase
+        .from('products')
+        .update({ stock: Math.max(0, product.stock - item.quantity) })
+        .eq('id', productId);
+    }
+  }
+
+  return row as Order;
+}
+
+export async function updateOrderStatus(orderId: string, status: string): Promise<void> {
+  const { error } = await supabase.from('orders').update({ status }).eq('id', orderId);
+  if (error) console.error('updateOrderStatus error:', error);
 }
 
 // ---- ACCOUNTING ----
-export function getTransactions(): Transaction[] {
-  return load<Transaction[]>('sayway_transactions', []);
+export async function getTransactions(): Promise<Transaction[]> {
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) {
+    console.error('getTransactions error:', error);
+    return [];
+  }
+  return data ?? [];
 }
 
-export function addTransaction(data: Omit<Transaction, 'id' | 'created_at'>): Transaction {
-  const txn: Transaction = { ...data, id: uid('TXN-'), created_at: new Date().toISOString() };
-  const txns = getTransactions();
-  txns.push(txn);
-  save('sayway_transactions', txns);
-  return txn;
+export async function addTransaction(data: Omit<Transaction, 'id' | 'created_at'>): Promise<Transaction | null> {
+  const txn = { ...data, id: uid('TXN-') };
+  const { data: row, error } = await supabase.from('transactions').insert(txn).select().single();
+  if (error) {
+    console.error('addTransaction error:', error);
+    return null;
+  }
+  return row as Transaction;
 }
 
-export function getSummary() {
-  const rawOrders = getOrders();
+export async function getSummary() {
+  const [rawOrders, products, txns] = await Promise.all([
+    getOrders(),
+    getProducts(),
+    getTransactions(),
+  ]);
+
   const orders = rawOrders.map(o => ({
     ...o,
     id: o.id || o.orderId || 'ORD-UNKNOWN',
     customer_name: o.customer_name || o.customerName || 'Guest',
     total: typeof o.total === 'number' ? o.total : (typeof o.amount === 'number' ? o.amount : 0),
   }));
-  const products = getProducts();
-  const txns = getTransactions();
+
   const total_revenue = orders.reduce((s, o) => s + (o.total || 0), 0);
   const expenses = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
   const total_stock = products.reduce((s, p) => s + p.stock, 0);
   const total_inventory_value = products.reduce((s, p) => s + p.stock * p.price, 0);
+
   return {
     total_revenue, total_orders: orders.length,
     pending: orders.filter(o => o.status === 'PENDING').length,

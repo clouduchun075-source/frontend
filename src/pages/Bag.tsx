@@ -2,14 +2,20 @@ import { useState } from 'react';
 import { Minus, Plus, Send, Globe, Lock, ShoppingBag, X, Check } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { CheckoutModal } from '../components/CheckoutModal';
+import type { ShippingAddress } from '../data/api';
 
 export const Bag = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { cartItems, cartSubtotal, cartCount, updateQuantity, removeFromCart, createOrder, formatPrice, t } = useCart();
   const [promoCode, setPromoCode] = useState('');
   const [isPromoApplied, setIsPromoApplied] = useState(false);
   const [promoError, setPromoError] = useState('');
   const [showCheckoutSuccess, setShowCheckoutSuccess] = useState(false);
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
+  const [placingOrder, setPlacingOrder] = useState(false);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +30,19 @@ export const Bag = () => {
     }
   };
 
-  const handleCheckout = () => {
-    const order = createOrder('Alex Mercer');
+  const handleCheckoutClick = () => {
+    if (!user) {
+      navigate('/login', { state: { from: '/bag' } });
+      return;
+    }
+    setShowCheckoutModal(true);
+  };
+
+  const handlePlaceOrder = async (shipping: ShippingAddress) => {
+    setPlacingOrder(true);
+    const order = await createOrder(shipping);
+    setPlacingOrder(false);
+    setShowCheckoutModal(false);
     if (order) {
       setShowCheckoutSuccess(true);
       setTimeout(() => {
@@ -333,12 +350,21 @@ export const Bag = () => {
                   )}
                 </form>
 
-                <button 
-                  onClick={handleCheckout}
-                  className="w-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-4.5 tracking-widest hover:opacity-90 transition-opacity focus:outline-none"
-                >
-                  Proceed To Checkout
-                </button>
+                {user ? (
+                  <button
+                    onClick={handleCheckoutClick}
+                    className="w-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-4.5 tracking-widest hover:opacity-90 transition-opacity rounded-full focus:outline-none"
+                  >
+                    Proceed To Checkout
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => navigate('/signup', { state: { from: '/bag' } })}
+                    className="w-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-4.5 tracking-widest hover:opacity-90 transition-opacity rounded-full focus:outline-none"
+                  >
+                    Sign Up To Checkout
+                  </button>
+                )}
 
                 <div className="md:hidden text-center text-[9px] font-semibold text-neutral-400 dark:text-neutral-500 tracking-wider">
                   Secure SSL Encrypted Payment
@@ -360,6 +386,15 @@ export const Bag = () => {
           </div>
         )}
       </div>
+
+      {showCheckoutModal && (
+        <CheckoutModal
+          total={formatPrice(orderTotal)}
+          submitting={placingOrder}
+          onClose={() => setShowCheckoutModal(false)}
+          onSubmit={handlePlaceOrder}
+        />
+      )}
     </div>
   );
 };

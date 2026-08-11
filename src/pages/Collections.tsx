@@ -5,6 +5,15 @@ import { getProducts } from '../data/api';
 import type { Product } from '../data/api';
 import { ProductCard } from '../components/ProductCard';
 import { useCart } from '../context/CartContext';
+import { getAllCategories, getAllBrands, getAllColors } from '../utils/productTaxonomy';
+
+// Only the original 3 categories have translation strings; anything an
+// admin adds later via "+ Add" is shown as typed instead of translated.
+const CATEGORY_TRANSLATION_KEYS: Record<string, 'outerwear' | 'knitwear' | 'accessories'> = {
+  Outerwear: 'outerwear',
+  Knitwear: 'knitwear',
+  Accessories: 'accessories',
+};
 
 const ITEMS_PER_PAGE = 6;
 
@@ -13,14 +22,18 @@ export const Collections = () => {
   const { formatPrice, t } = useCart();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-  useEffect(() => { 
-    setAllProducts(getProducts()); 
+  useEffect(() => {
+    getProducts().then(setAllProducts);
   }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Products');
   const [priceLimit, setPriceLimit] = useState(2500);
-  const [selectedBrands, setSelectedBrands] = useState<string[]>(['SAYWAY BLACK LABEL']);
+  const [priceLimitTouched, setPriceLimitTouched] = useState(false);
+  // No brand pre-selected -- previously this defaulted to only
+  // 'SAYWAY BLACK LABEL', which silently hid every 'SAYWAY CORE' product
+  // the moment the page loaded and made the filters look broken.
+  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSize, setSelectedSize] = useState<string>('');
   const [sortBy, setSortBy] = useState('Newest');
@@ -28,21 +41,38 @@ export const Collections = () => {
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const categoriesList = [
-    { name: 'All Products', count: allProducts.length, key: 'all_products' as const },
-    { name: 'Outerwear', count: allProducts.filter(p => p.category === 'Outerwear').length, key: 'outerwear' as const },
-    { name: 'Knitwear', count: allProducts.filter(p => p.category === 'Knitwear').length, key: 'knitwear' as const },
-    { name: 'Accessories', count: allProducts.filter(p => p.category === 'Accessories').length, key: 'accessories' as const },
+  // The price slider's max used to be hardcoded to 2500, so any product
+  // priced above that could never be shown no matter what the customer
+  // picked. Size it to the priciest product actually in the catalog instead.
+  const priceCap = useMemo(() => {
+    if (allProducts.length === 0) return 2500;
+    const highest = Math.max(...allProducts.map((p) => p.price));
+    return Math.max(100, Math.ceil(highest / 100) * 100);
+  }, [allProducts]);
+
+  useEffect(() => {
+    if (!priceLimitTouched) setPriceLimit(priceCap);
+  }, [priceCap, priceLimitTouched]);
+
+  // Category/brand/color option lists come from the same shared list the
+  // Admin panel writes to (see utils/productTaxonomy.ts) -- so a custom
+  // option an admin adds while creating a product shows up as a real filter
+  // choice here too, instead of only ever being a hidden, unfilterable value.
+  const categoriesList: { name: string; count: number; translationKey?: 'all_products' | 'outerwear' | 'knitwear' | 'accessories' }[] = [
+    { name: 'All Products', count: allProducts.length, translationKey: 'all_products' },
+    ...getAllCategories().map((name) => ({
+      name,
+      count: allProducts.filter((p) => p.category === name).length,
+      translationKey: CATEGORY_TRANSLATION_KEYS[name],
+    })),
   ];
 
-  const colorsList = [
-    { name: 'black', hex: '#000000', label: 'Carbon Black / Matte Black' },
-    { name: 'white', hex: '#FFFFFF', label: 'Bone White / Optic White' },
-    { name: 'lightgray', hex: '#E5E5E5', label: 'Slate Gray' },
-    { name: 'darkgray', hex: '#333333', label: 'Midnight' },
-  ];
+  const categoryLabel = (cat: { name: string; translationKey?: 'all_products' | 'outerwear' | 'knitwear' | 'accessories' }) =>
+    cat.translationKey ? t(cat.translationKey) : cat.name;
 
-  const sizesList = ['XS', 'S', 'M', 'L', 'XL'];
+  const colorsList = getAllColors();
+  const brandsList = getAllBrands();
+  const sizesList = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   const handleBrandToggle = (brand: string) => {
     setSelectedBrands((prev) =>
@@ -59,7 +89,8 @@ export const Collections = () => {
   const handleResetFilters = () => {
     setSearchQuery('');
     setSelectedCategory('All Products');
-    setPriceLimit(2500);
+    setPriceLimit(priceCap);
+    setPriceLimitTouched(false);
     setSelectedBrands([]);
     setSelectedColors([]);
     setSelectedSize('');
@@ -142,7 +173,7 @@ export const Collections = () => {
                   selectedCategory === cat.name ? 'text-black dark:text-white' : 'text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white'
                 }`}
               >
-                <span>{t(cat.key)}</span>
+                <span>{categoryLabel(cat)}</span>
                 <span className="text-neutral-400 dark:text-neutral-500 font-normal">({cat.count})</span>
               </button>
             </li>
@@ -156,10 +187,10 @@ export const Collections = () => {
           <input
             type="range"
             min="0"
-            max="2500"
+            max={priceCap}
             step="50"
             value={priceLimit}
-            onChange={(e) => { setPriceLimit(Number(e.target.value)); setCurrentPage(1); }}
+            onChange={(e) => { setPriceLimit(Number(e.target.value)); setPriceLimitTouched(true); setCurrentPage(1); }}
             className="w-full h-[3px] bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-black dark:accent-white focus:outline-none"
           />
           <div className="flex justify-between text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider">
@@ -172,24 +203,24 @@ export const Collections = () => {
       <div>
         <h4 className="text-[10px] font-bold tracking-widest uppercase text-neutral-400 dark:text-neutral-500 mb-5 text-left">{t('brand')}</h4>
         <div className="space-y-3">
-          {['SAYWAY CORE', 'SAYWAY BLACK LABEL'].map((brand) => (
-            <label key={brand} className="flex items-center space-x-3 text-xs font-semibold text-neutral-800 dark:text-neutral-200 cursor-pointer">
-              <div className="relative flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={selectedBrands.includes(brand)}
-                  onChange={() => handleBrandToggle(brand)}
-                  className="sr-only"
-                />
-                <div className={`w-4 h-4 border border-neutral-300 dark:border-neutral-700 rounded-none bg-white dark:bg-neutral-800 flex items-center justify-center transition-all ${
-                  selectedBrands.includes(brand) ? 'bg-black border-black dark:bg-white dark:border-white' : 'hover:border-neutral-400'
+          {brandsList.map((brand) => {
+            const checked = selectedBrands.includes(brand);
+            return (
+              <button
+                key={brand}
+                type="button"
+                onClick={() => { handleBrandToggle(brand); setCurrentPage(1); }}
+                className="w-full flex items-center space-x-3 text-xs font-semibold text-neutral-800 dark:text-neutral-200 cursor-pointer text-left"
+              >
+                <div className={`w-4 h-4 flex-shrink-0 border border-neutral-300 dark:border-neutral-700 rounded-none bg-white dark:bg-neutral-800 flex items-center justify-center transition-all ${
+                  checked ? 'bg-black border-black dark:bg-white dark:border-white' : 'hover:border-neutral-400'
                 }`}>
-                  {selectedBrands.includes(brand) && <Check className="w-3 h-3 text-white dark:text-black stroke-[3.5]" />}
+                  {checked && <Check className="w-3 h-3 text-white dark:text-black stroke-[3.5]" />}
                 </div>
-              </div>
-              <span className="tracking-wide">{brand}</span>
-            </label>
-          ))}
+                <span className="tracking-wide">{brand}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -241,7 +272,7 @@ export const Collections = () => {
         </div>
       </div>
 
-      {(searchQuery || selectedCategory !== 'All Products' || priceLimit !== 2500 || selectedBrands.length > 0 || selectedColors.length > 0 || selectedSize) && (
+      {(searchQuery || selectedCategory !== 'All Products' || priceLimitTouched || selectedBrands.length > 0 || selectedColors.length > 0 || selectedSize) && (
         <button
           onClick={handleResetFilters}
           className="text-center text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-black dark:hover:text-white border-b border-transparent hover:border-black dark:hover:border-white transition-all py-1.5 self-start cursor-pointer"
@@ -389,7 +420,7 @@ export const Collections = () => {
                     : 'bg-neutral-55 dark:bg-neutral-800 border-neutral-150 dark:border-neutral-750 text-neutral-700 dark:text-neutral-300'
                 }`}
               >
-                {t(cat.key)}
+                {categoryLabel(cat)}
               </button>
             );
           })}

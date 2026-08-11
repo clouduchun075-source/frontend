@@ -1,5 +1,10 @@
-import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useRef } from 'react';
 import { translations, type TranslationKey } from '../utils/translations';
+import { useAuth } from './AuthContext';
+import { createOrder as createSupabaseOrder, updateOrderStatus as updateSupabaseOrderStatus, getOrdersByUser, type ShippingAddress } from '../data/api';
+
+// How long after placing an order a customer is allowed to self-cancel it.
+export const ORDER_CANCEL_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 export interface CartItem {
   id: string;
@@ -28,6 +33,7 @@ export interface Order {
   created_at?: string;
   itemsCount: number;
   items?: CartItem[];
+  supabaseId?: string;
 }
 
 interface CartContextType {
@@ -39,7 +45,8 @@ interface CartContextType {
   updateQuantity: (id: string, size: string, qty: number) => void;
   clearCart: () => void;
   orders: Order[];
-  createOrder: (customerName?: string) => Order | undefined;
+  createOrder: (shipping: ShippingAddress) => Promise<Order | undefined>;
+  cancelOrder: (orderId: string) => Promise<boolean>;
   lastOrder: Order | null;
   wishlist: string[];
   toggleWishlist: (productId: string) => void;
@@ -66,86 +73,6 @@ const loadFromStorage = <T,>(key: string, fallback: T): T => {
   return fallback;
 };
 
-const defaultCartItems: CartItem[] = [
-  {
-    id: 'c1',
-    itemId: 'SW-29401',
-    name: 'STRUCTURAL WOOL COAT',
-    subtitle: 'Carbon Black / SIZE M',
-    price: 1250,
-    quantity: 1,
-    size: 'M',
-    color: 'black',
-    image: 'https://images.unsplash.com/photo-1544022613-e87ca75a784a?auto=format&fit=crop&q=80&w=600',
-  },
-  {
-    id: 'c6',
-    itemId: 'SW-88312',
-    name: 'MINIMALIST LEATHER TOTE',
-    subtitle: 'Matte Black / SIZE M',
-    price: 2100,
-    quantity: 1,
-    size: 'M',
-    color: 'black',
-    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&q=80&w=600',
-  },
-];
-
-const defaultOrders: Order[] = [
-  {
-    id: '#ORD-82194',
-    orderId: '#ORD-82194',
-    customerName: 'Elena Rodriguez',
-    customer_name: 'Elena Rodriguez',
-    customerAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100',
-    status: 'SHIPPED',
-    amount: 492.00,
-    total: 492.00,
-    timeAgo: '2 mins ago',
-    created_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-    itemsCount: 1,
-  },
-  {
-    id: '#ORD-82193',
-    orderId: '#ORD-82193',
-    customerName: 'Marcus Chen',
-    customer_name: 'Marcus Chen',
-    customerAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100',
-    status: 'PROCESSING',
-    amount: 1204.50,
-    total: 1204.50,
-    timeAgo: '15 mins ago',
-    created_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-    itemsCount: 3,
-  },
-  {
-    id: '#ORD-82192',
-    orderId: '#ORD-82192',
-    customerName: 'Sarah Miller',
-    customer_name: 'Sarah Miller',
-    customerAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=100',
-    status: 'PENDING',
-    amount: 85.00,
-    total: 85.00,
-    timeAgo: '1 hour ago',
-    created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    itemsCount: 1,
-  },
-  {
-    id: '#ORD-82191',
-    orderId: '#ORD-82191',
-    customerName: 'Jonathan Wu',
-    customer_name: 'Jonathan Wu',
-    customerAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100',
-    status: 'CANCELLED',
-    amount: 340.00,
-    total: 340.00,
-    timeAgo: '1 day ago',
-    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    itemsCount: 2,
-  },
-];
-
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
@@ -155,21 +82,92 @@ export const useCart = () => {
 };
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>(() =>
-    loadFromStorage<CartItem[]>('sayway_cart', defaultCartItems)
-  );
-  const [orders, setOrders] = useState<Order[]>(() =>
-    loadFromStorage<Order[]>('sayway_orders', defaultOrders)
-  );
-  const [wishlist, setWishlist] = useState<string[]>(() =>
-    loadFromStorage<string[]>('sayway_wishlist', [])
-  );
-  const [walletBalance, setWalletBalance] = useState<number>(() =>
-    loadFromStorage<number>('sayway_wallet', 0)
-  );
+  const { user } = useAuth();
+
+  // Each signed-in user (and guests, before signing in) gets their own
+  // isolated cart/orders/wishlist/wallet bucket in localStorage, keyed by
+  // their Supabase user id. This prevents one account from seeing another
+  // account's cart or order history on the same browser.
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
 
-  // Localization and Currency States
+  // Guards so that loading a new user's data doesn't immediately
+  // overwrite that same data with the (stale) pre-load state.
+  const skipSaveRef = useRef({ cart: true, orders: true, wishlist: true, wallet: true });
+
+  const prevScopeRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const scope = user?.id || 'guest';
+    const prevScope = prevScopeRef.current;
+    skipSaveRef.current = { cart: true, orders: true, wishlist: true, wallet: true };
+
+    let cart = loadFromStorage<CartItem[]>(`sayway_cart_${scope}`, []);
+    const ord = loadFromStorage<Order[]>(`sayway_orders_${scope}`, []);
+    let wish = loadFromStorage<string[]>(`sayway_wishlist_${scope}`, []);
+    const wallet = loadFromStorage<number>(`sayway_wallet_${scope}`, 0);
+
+    // Just signed up/in: carry over whatever was sitting in the guest
+    // cart/wishlist so items added before signing up aren't lost.
+    if (prevScope === 'guest' && scope !== 'guest') {
+      const guestCart = loadFromStorage<CartItem[]>('sayway_cart_guest', []);
+      const guestWishlist = loadFromStorage<string[]>('sayway_wishlist_guest', []);
+      if (guestCart.length > 0) {
+        cart = cart.length > 0 ? [...cart, ...guestCart] : guestCart;
+        localStorage.removeItem('sayway_cart_guest');
+      }
+      if (guestWishlist.length > 0) {
+        wish = Array.from(new Set([...wish, ...guestWishlist]));
+        localStorage.removeItem('sayway_wishlist_guest');
+      }
+    }
+
+    setCartItems(cart);
+    setOrders(ord);
+    setWishlist(wish);
+    setWalletBalance(wallet);
+    prevScopeRef.current = scope;
+  }, [user?.id]);
+
+  // The Admin panel edits order status directly in Supabase, but a signed-in
+  // customer's own order list otherwise only lives in localStorage -- so an
+  // Admin-side status change (e.g. Processing -> Shipped) would never show
+  // up for the customer. Periodically pull the customer's own orders from
+  // Supabase and patch just the status field into local state to stay in sync.
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const syncStatuses = async () => {
+      try {
+        const remoteOrders = await getOrdersByUser(user.id);
+        if (remoteOrders.length === 0) return;
+        const statusById = new Map(remoteOrders.map((r) => [r.id, r.status]));
+        setOrders((prev) => {
+          let changed = false;
+          const next = prev.map((o) => {
+            const remoteStatus = statusById.get(o.orderId);
+            if (remoteStatus && remoteStatus !== o.status) {
+              changed = true;
+              return { ...o, status: remoteStatus as Order['status'] };
+            }
+            return o;
+          });
+          return changed ? next : prev;
+        });
+      } catch (err) {
+        console.error('Failed to sync order statuses from Supabase:', err);
+      }
+    };
+
+    syncStatuses();
+    const interval = setInterval(syncStatuses, 10000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
+
+  // Localization and Currency States (shared across accounts on this device)
   const [lang, setLang] = useState<'EN' | 'RU' | 'UZ'>(() =>
     loadFromStorage<'EN' | 'RU' | 'UZ'>('sayway_lang', 'EN')
   );
@@ -178,19 +176,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 
   useEffect(() => {
-    localStorage.setItem('sayway_cart', JSON.stringify(cartItems));
+    if (skipSaveRef.current.cart) { skipSaveRef.current.cart = false; return; }
+    localStorage.setItem(`sayway_cart_${user?.id || 'guest'}`, JSON.stringify(cartItems));
   }, [cartItems]);
 
   useEffect(() => {
-    localStorage.setItem('sayway_orders', JSON.stringify(orders));
+    if (skipSaveRef.current.orders) { skipSaveRef.current.orders = false; return; }
+    localStorage.setItem(`sayway_orders_${user?.id || 'guest'}`, JSON.stringify(orders));
   }, [orders]);
 
   useEffect(() => {
-    localStorage.setItem('sayway_wishlist', JSON.stringify(wishlist));
+    if (skipSaveRef.current.wishlist) { skipSaveRef.current.wishlist = false; return; }
+    localStorage.setItem(`sayway_wishlist_${user?.id || 'guest'}`, JSON.stringify(wishlist));
   }, [wishlist]);
 
   useEffect(() => {
-    localStorage.setItem('sayway_wallet', JSON.stringify(walletBalance));
+    if (skipSaveRef.current.wallet) { skipSaveRef.current.wallet = false; return; }
+    localStorage.setItem(`sayway_wallet_${user?.id || 'guest'}`, JSON.stringify(walletBalance));
   }, [walletBalance]);
 
   useEffect(() => {
@@ -252,11 +254,41 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCartItems([]);
   };
 
-  const createOrder = (customerName = 'Alex Mercer'): Order | undefined => {
+  const createOrder = async (shipping: ShippingAddress): Promise<Order | undefined> => {
     if (cartItems.length === 0) return undefined;
 
-    const ordId = `#ORD-${Math.floor(82195 + Math.random() * 1000)}`;
+    const customerName = `${shipping.first_name} ${shipping.last_name}`.trim();
+    // Generate the order id once and use it for both the local order and the
+    // Supabase row, so the customer and Admin panel always see the exact
+    // same order number instead of two different generated IDs.
+    const ordId = `ORD-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
     const nowIso = new Date().toISOString();
+    const snapshotItems = [...cartItems];
+
+    // Persist the order (with full delivery details) to Supabase *first* and
+    // wait for it, so the local order always has its supabaseId attached
+    // before the customer can interact with it (e.g. cancel it right away).
+    // Without awaiting this, a fast cancel-right-after-ordering test could
+    // race ahead of the sync and never reach the Admin panel.
+    let supabaseId: string | undefined;
+    try {
+      const row = await createSupabaseOrder({
+        id: ordId,
+        user_id: user?.id ?? null,
+        customer_name: customerName,
+        customer_email: user?.email || '',
+        items: snapshotItems.map((i) => ({
+          product_id: i.id, name: i.name, quantity: i.quantity, price: i.price,
+          size: i.size, color: i.color, image: i.image,
+        })),
+        total: cartSubtotal,
+        status: 'PROCESSING',
+        shipping_address: shipping,
+      });
+      supabaseId = row?.id;
+    } catch (err) {
+      console.error('Failed to sync order to Supabase:', err);
+    }
 
     const newOrder: Order = {
       id: ordId,
@@ -270,13 +302,34 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       timeAgo: 'Just now',
       created_at: nowIso,
       itemsCount: cartCount,
-      items: [...cartItems],
+      items: snapshotItems,
+      supabaseId,
     };
 
     setOrders((prevOrders) => [newOrder, ...prevOrders]);
     setLastOrder(newOrder);
     clearCart();
     return newOrder;
+  };
+
+  // Customers can cancel their own order within ORDER_CANCEL_WINDOW_MS of
+  // placing it. After that, they need to contact an operator instead.
+  const cancelOrder = async (orderId: string): Promise<boolean> => {
+    const target = orders.find((o) => o.orderId === orderId);
+    if (!target) return false;
+    if (target.status === 'CANCELLED' || target.status === 'DELIVERED' || target.status === 'SHIPPED') return false;
+    const placedAt = target.created_at ? new Date(target.created_at).getTime() : 0;
+    if (!placedAt || Date.now() - placedAt > ORDER_CANCEL_WINDOW_MS) return false;
+
+    setOrders((prev) => prev.map((o) => (o.orderId === orderId ? { ...o, status: 'CANCELLED' } : o)));
+    if (target.supabaseId) {
+      try {
+        await updateSupabaseOrderStatus(target.supabaseId, 'CANCELLED');
+      } catch (err) {
+        console.error('Failed to sync order cancellation to Supabase:', err);
+      }
+    }
+    return true;
   };
 
   const toggleWishlist = (productId: string) => {
@@ -319,6 +372,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         clearCart,
         orders,
         createOrder,
+        cancelOrder,
         lastOrder,
         wishlist,
         toggleWishlist,

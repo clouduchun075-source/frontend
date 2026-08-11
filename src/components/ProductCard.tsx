@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Heart, Star, ShoppingBag, Check } from 'lucide-react';
+import { Heart, ShoppingBag, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import type { Product } from '../data/api';
+import { getDiscountedPrice } from '../utils/pricing';
 
 interface ProductCardProps {
   product: Product;
@@ -27,7 +28,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'gr
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: getDiscountedPrice(product.price, product.discount),
       quantity: 1,
       size: product.size[0] || 'M',
       color: product.subtitle,
@@ -171,8 +172,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'gr
           <h3 className="font-extrabold uppercase tracking-wide pr-2 text-neutral-900 dark:text-neutral-100 leading-tight text-left">
             {localizedName}
           </h3>
-          <span className="font-extrabold text-neutral-850 dark:text-neutral-200 whitespace-nowrap">
-            {formatPrice(product.price)}
+          <span className="font-extrabold text-neutral-850 dark:text-neutral-200 whitespace-nowrap text-right">
+            {product.discount ? (
+              <span className="flex flex-col items-end leading-tight">
+                <span className="text-[10px] font-semibold text-neutral-400 line-through">{formatPrice(product.price)}</span>
+                <span>{formatPrice(getDiscountedPrice(product.price, product.discount))}</span>
+              </span>
+            ) : (
+              formatPrice(product.price)
+            )}
           </span>
         </div>
 
@@ -183,23 +191,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'gr
           </span>
         )}
 
-        {/* Star Rating Placeholder */}
-        <div className="flex items-center space-x-0.5 pt-1">
-          {[...Array(5)].map((_, i) => {
-            const ratingVal = product.rating || 4.5;
-            const filled = i < Math.floor(ratingVal);
-            return (
-              <Star 
-                key={i} 
-                className={`w-2.5 h-2.5 ${
-                  filled 
-                    ? 'fill-black dark:fill-white stroke-black dark:stroke-white' 
-                    : 'stroke-neutral-300 dark:stroke-neutral-700'
-                }`} 
-              />
-            );
-          })}
-        </div>
       </div>
     </div>
   );

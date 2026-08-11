@@ -14,8 +14,8 @@ export const Home = () => {
   const [mobileSubscribed, setMobileSubscribed] = useState(false);
   const [apiProducts, setApiProducts] = useState<Product[]>([]);
 
-  useEffect(() => { 
-    setApiProducts(getProducts()); 
+  useEffect(() => {
+    getProducts().then(setApiProducts);
   }, []);
 
   const desktopNewArrivals = apiProducts.filter(p => p.tag === 'NEW ARRIVAL').slice(0, 4);

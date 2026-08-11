@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { getProductById } from '../data/api';
 import type { Product } from '../data/api';
 import { ProductCard } from '../components/ProductCard';
+import { getDiscountedPrice } from '../utils/pricing';
 
 export const ProductDetails = () => {
   const navigate = useNavigate();
@@ -13,14 +14,29 @@ export const ProductDetails = () => {
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
-  
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+
   useEffect(() => {
     if (!id) return;
+    let cancelled = false;
     setLoading(true);
-    const p = getProductById(id);
-    setProduct(p || null);
-    setLoading(false);
+    getProductById(id).then((p) => {
+      if (cancelled) return;
+      setProduct(p || null);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    const relatedIds = ['c10', 'c5', 'c7', 'c6'];
+    let cancelled = false;
+    Promise.all(relatedIds.map((rid) => getProductById(rid))).then((results) => {
+      if (cancelled) return;
+      setRelatedProducts(results.filter((p): p is Product => !!p));
+    });
+    return () => { cancelled = true; };
+  }, []);
   
   const [selectedSize, setSelectedSize] = useState('M');
   const [quantity, setQuantity] = useState(1);
@@ -75,7 +91,7 @@ export const ProductDetails = () => {
     addToCart({
       id: product.id,
       name: localizedName,
-      price: product.price,
+      price: getDiscountedPrice(product.price, product.discount),
       quantity,
       size: selectedSize,
       color: localizedSubtitle,
@@ -132,9 +148,6 @@ export const ProductDetails = () => {
       comment: '"Sizing is very oversized. I\'m usually an M but ordered an S and it\'s perfect. The weight of the fabric is incredible for winter."',
     },
   ];
-
-  const relatedIds = ['c10', 'c5', 'c7', 'c6'];
-  const relatedProducts = relatedIds.map(rid => getProductById(rid)).filter((p): p is Product => !!p);
 
   return (
     <div className="bg-white dark:bg-neutral-900 text-black dark:text-white min-h-screen relative pb-20 md:pb-12 transition-colors duration-300">
@@ -250,8 +263,14 @@ export const ProductDetails = () => {
               <h1 className="text-2xl md:text-3xl font-black uppercase text-black dark:text-white tracking-tight leading-tight">
                 {localizedName}
               </h1>
-              <div className="text-xl md:text-2xl font-black text-neutral-900 dark:text-neutral-100">
-                {formatPrice(product.price)}
+              <div className="flex items-baseline gap-2.5 text-xl md:text-2xl font-black text-neutral-900 dark:text-neutral-100">
+                <span>{formatPrice(getDiscountedPrice(product.price, product.discount))}</span>
+                {product.discount && (
+                  <>
+                    <span className="text-sm md:text-base font-bold text-neutral-400 line-through">{formatPrice(product.price)}</span>
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-widest text-red-600">-{product.discount}%</span>
+                  </>
+                )}
               </div>
             </div>
 
