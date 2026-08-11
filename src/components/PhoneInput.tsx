@@ -75,6 +75,14 @@ export const PhoneInput = ({ value, onChange }: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country, digits]);
 
+  // This is otherwise a self-managed (uncontrolled) input -- but if the
+  // parent resets `value` back to empty externally (e.g. TelegramAuth's
+  // "Change phone number" button going back a step), clear the digits too
+  // so the field doesn't keep showing the old number.
+  useEffect(() => {
+    if (value === '' && digits !== '') setDigits('');
+  }, [value]);
+
   // Trim digits if the newly selected country allows fewer of them
   const selectCountry = (c: Country) => {
     setCountry(c);
