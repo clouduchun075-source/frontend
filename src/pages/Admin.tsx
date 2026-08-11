@@ -60,7 +60,7 @@ export const Admin = () => {
       localStorage.setItem('sayway_admin_token', '1');
       setLoggedIn(true);
     } else {
-      setLoginError('Invalid credentials');
+      setLoginError('Login yoki parol xato');
     }
   };
 
@@ -82,18 +82,18 @@ export const Admin = () => {
           <div className="space-y-4">
             {loginError && <div className="text-xs font-bold text-red-600 bg-red-50 p-3 tracking-wide">{loginError}</div>}
             <div className="space-y-1">
-              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Username</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Login</label>
               <input type="text" value={username} onChange={e => setUsername(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
                 className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-3 focus:outline-none focus:border-black font-semibold" placeholder="admin" />
             </div>
             <div className="space-y-1">
-              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Password</label>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Parol</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleLogin()}
                 className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-3 focus:outline-none focus:border-black font-semibold" placeholder="admin123" />
             </div>
-            <button onClick={handleLogin} className="w-full bg-black text-white text-xs font-bold uppercase py-4 tracking-widest hover:opacity-90">Sign In</button>
+            <button onClick={handleLogin} className="w-full bg-black text-white text-xs font-bold uppercase py-4 tracking-widest hover:opacity-90">Kirish</button>
           </div>
         </div>
       </div>
@@ -107,12 +107,13 @@ const AdminPanel = ({ activeTab, setActiveTab, onLogout, onBack }: {
   activeTab: string; setActiveTab: (t: string) => void; onLogout: () => void; onBack: () => void;
 }) => {
   const tabs = [
-    { name: 'Dashboard', icon: LayoutDashboard },
-    { name: 'Products', icon: Folder },
-    { name: 'Orders', icon: ShoppingBag },
-    { name: 'Customers', icon: Users },
-    { name: 'Accounting', icon: Wallet },
+    { name: 'Dashboard', icon: LayoutDashboard, label: 'Boshqaruv paneli' },
+    { name: 'Products', icon: Folder, label: 'Mahsulotlar' },
+    { name: 'Orders', icon: ShoppingBag, label: 'Buyurtmalar' },
+    { name: 'Customers', icon: Users, label: 'Mijozlar' },
+    { name: 'Accounting', icon: Wallet, label: 'Hisob-kitob' },
   ];
+  const tabLabel = (name: string) => tabs.find(t => t.name === name)?.label || name;
 
   return (
     <div className="min-h-screen bg-neutral-50 flex">
@@ -129,17 +130,17 @@ const AdminPanel = ({ activeTab, setActiveTab, onLogout, onBack }: {
                 className={`flex items-center space-x-3 px-4 py-3 text-xs font-bold uppercase tracking-widest rounded-lg transition-all ${
                   activeTab === tab.name ? 'bg-black text-white' : 'text-neutral-500 hover:text-black hover:bg-neutral-100'
                 }`}>
-                <Icon className="w-4 h-4 stroke-[1.8]" /><span>{tab.name}</span>
+                <Icon className="w-4 h-4 stroke-[1.8]" /><span>{tab.label}</span>
               </button>
             );
           })}
         </nav>
         <div className="space-y-3 pt-4 border-t border-neutral-100">
           <button onClick={onBack} className="w-full flex items-center space-x-3 px-4 py-2 text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-black">
-            <ArrowLeft className="w-4 h-4" /><span>Back to Store</span>
+            <ArrowLeft className="w-4 h-4" /><span>Do'konga qaytish</span>
           </button>
           <button onClick={onLogout} className="w-full flex items-center space-x-3 px-4 py-2 text-xs font-bold uppercase tracking-widest text-red-500 hover:text-red-700">
-            <LogOut className="w-4 h-4" /><span>Sign Out</span>
+            <LogOut className="w-4 h-4" /><span>Chiqish</span>
           </button>
         </div>
       </aside>
@@ -148,7 +149,7 @@ const AdminPanel = ({ activeTab, setActiveTab, onLogout, onBack }: {
         <div className="lg:hidden flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <button onClick={onBack} className="p-2 text-neutral-500 hover:text-black"><ArrowLeft className="w-5 h-5 stroke-[2]" /></button>
-            <h1 className="text-lg font-black uppercase tracking-tight">{activeTab}</h1>
+            <h1 className="text-lg font-black uppercase tracking-tight">{tabLabel(activeTab)}</h1>
           </div>
           <button onClick={onLogout} className="text-red-500 p-2"><LogOut className="w-5 h-5" /></button>
         </div>
@@ -160,7 +161,7 @@ const AdminPanel = ({ activeTab, setActiveTab, onLogout, onBack }: {
                 className={`flex items-center space-x-2 px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest flex-shrink-0 border ${
                   activeTab === tab.name ? 'bg-black border-black text-white' : 'bg-white border-neutral-200 text-neutral-600'
                 }`}>
-                <Icon className="w-3.5 h-3.5" /><span>{tab.name}</span>
+                <Icon className="w-3.5 h-3.5" /><span>{tab.label}</span>
               </button>
             );
           })}
@@ -182,6 +183,14 @@ const statusBadge = (s: string) => {
   if (s === 'CANCELLED') return 'bg-red-50 text-red-700';
   return 'bg-neutral-100 text-neutral-500';
 };
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: 'Kutilmoqda',
+  PROCESSING: 'Qayta ishlanmoqda',
+  SHIPPED: 'Yuborildi',
+  DELIVERED: 'Yetkazildi',
+  CANCELLED: 'Bekor qilindi',
+};
+const statusLabel = (s: string) => STATUS_LABELS[s] || s;
 
 // ======================== DASHBOARD ========================
 const DashboardTab = () => {
@@ -194,21 +203,21 @@ const DashboardTab = () => {
   }, []);
 
   if (!summary) {
-    return <div className="text-xs text-neutral-400 font-medium">Loading...</div>;
+    return <div className="text-xs text-neutral-400 font-medium">Yuklanmoqda...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="hidden lg:block mb-4">
-        <h1 className="text-2xl font-black uppercase tracking-tight">Dashboard</h1>
-        <p className="text-xs text-neutral-400 font-medium tracking-wide">Your store at a glance.</p>
+        <h1 className="text-2xl font-black uppercase tracking-tight">Boshqaruv paneli</h1>
+        <p className="text-xs text-neutral-400 font-medium tracking-wide">Do'koningizga umumiy nazar.</p>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Revenue', value: fmt(summary.total_revenue), change: `${summary.total_orders} orders`, up: true },
-          { label: 'Net Profit', value: fmt(summary.net_profit), change: summary.net_profit >= 0 ? 'Positive' : 'Negative', up: summary.net_profit >= 0 },
-          { label: 'Products', value: String(summary.total_products), change: `${summary.low_stock} low stock`, up: summary.low_stock === 0 },
-          { label: 'Inventory', value: fmt(summary.total_inventory_value), change: `${summary.total_stock} units`, up: true },
+          { label: 'Daromad', value: fmt(summary.total_revenue), change: `${summary.total_orders} buyurtma`, up: true },
+          { label: 'Sof foyda', value: fmt(summary.net_profit), change: summary.net_profit >= 0 ? 'Musbat' : 'Manfiy', up: summary.net_profit >= 0 },
+          { label: 'Mahsulotlar', value: String(summary.total_products), change: `${summary.low_stock} kam qoldi`, up: summary.low_stock === 0 },
+          { label: 'Ombor', value: fmt(summary.total_inventory_value), change: `${summary.total_stock} dona`, up: true },
         ].map(s => (
           <div key={s.label} className="bg-white border border-neutral-200 p-4 md:p-5 space-y-1">
             <span className="text-[9px] font-black uppercase tracking-widest text-neutral-400">{s.label}</span>
@@ -219,10 +228,10 @@ const DashboardTab = () => {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Pending', value: summary.pending, icon: Clock },
-          { label: 'Completed', value: summary.completed, icon: CheckCircle },
-          { label: 'Cancelled', value: summary.cancelled, icon: XCircle },
-          { label: 'Avg Order', value: fmt(summary.avg_order), icon: TrendingUp },
+          { label: 'Kutilmoqda', value: summary.pending, icon: Clock },
+          { label: 'Yakunlangan', value: summary.completed, icon: CheckCircle },
+          { label: 'Bekor qilingan', value: summary.cancelled, icon: XCircle },
+          { label: "O'rtacha buyurtma", value: fmt(summary.avg_order), icon: TrendingUp },
         ].map(s => (
           <div key={s.label} className="bg-white border border-neutral-200 p-4 flex items-center space-x-3">
             <s.icon className="w-5 h-5 text-neutral-400" />
@@ -231,26 +240,26 @@ const DashboardTab = () => {
         ))}
       </div>
       <div className="bg-white border border-neutral-200">
-        <div className="px-5 py-4 border-b border-neutral-100"><h3 className="text-xs font-black uppercase tracking-wider">Recent Orders</h3></div>
+        <div className="px-5 py-4 border-b border-neutral-100"><h3 className="text-xs font-black uppercase tracking-wider">So'nggi buyurtmalar</h3></div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead><tr className="text-[9px] uppercase font-bold tracking-widest text-neutral-400 border-b border-neutral-100">
-              <th className="px-5 py-3 text-left">ID</th><th className="px-5 py-3 text-left">Customer</th><th className="px-5 py-3 text-left">Total</th><th className="px-5 py-3 text-left">Status</th>
+              <th className="px-5 py-3 text-left">ID</th><th className="px-5 py-3 text-left">Mijoz</th><th className="px-5 py-3 text-left">Jami</th><th className="px-5 py-3 text-left">Holati</th>
             </tr></thead>
             <tbody className="divide-y divide-neutral-50">
               {orders.length > 0 ? orders.map(o => {
                 const oid = o.id || o.orderId || 'ORD-UNKNOWN';
-                const cname = o.customer_name || o.customerName || 'Guest';
+                const cname = o.customer_name || o.customerName || 'Mehmon';
                 const tot = typeof o.total === 'number' ? o.total : (typeof o.amount === 'number' ? o.amount : 0);
                 return (
                   <tr key={oid} className="hover:bg-neutral-50/50">
                     <td className="px-5 py-3.5 font-bold text-black">{oid}</td>
                     <td className="px-5 py-3.5 font-semibold text-neutral-700">{cname}</td>
                     <td className="px-5 py-3.5 font-black text-black">{fmt(tot)}</td>
-                    <td className="px-5 py-3.5"><span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${statusBadge(o.status)}`}>{o.status}</span></td>
+                    <td className="px-5 py-3.5"><span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${statusBadge(o.status)}`}>{statusLabel(o.status)}</span></td>
                   </tr>
                 );
-              }) : <tr><td colSpan={4} className="px-5 py-8 text-center text-neutral-400">No orders yet</td></tr>}
+              }) : <tr><td colSpan={4} className="px-5 py-8 text-center text-neutral-400">Hozircha buyurtmalar yo'q</td></tr>}
             </tbody>
           </table>
         </div>
@@ -275,28 +284,28 @@ const ProductsTab = () => {
   );
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this product?')) return;
+    if (!confirm("Bu mahsulotni o'chirmoqchimisiz?")) return;
     await deleteProduct(id); reload();
-    setToast('Product deleted'); setTimeout(() => setToast(''), 3000);
+    setToast("Mahsulot o'chirildi"); setTimeout(() => setToast(''), 3000);
   };
 
   return (
     <div className="space-y-6">
       {toast && <div className="fixed top-4 right-4 z-50 bg-black text-white text-xs font-bold uppercase py-3 px-5 tracking-widest">{toast}</div>}
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
-        <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Products</h1><p className="text-xs text-neutral-400 font-medium">{products.length} products</p></div>
+        <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Mahsulotlar</h1><p className="text-xs text-neutral-400 font-medium">{products.length} mahsulot</p></div>
         <button onClick={() => { setEditProduct(null); setShowModal(true); }} className="flex items-center space-x-2 bg-black text-white px-5 py-2.5 text-xs font-bold uppercase tracking-widest hover:opacity-90">
-          <Plus className="w-4 h-4 stroke-[2]" /><span>Add Product</span>
+          <Plus className="w-4 h-4 stroke-[2]" /><span>Mahsulot qo'shish</span>
         </button>
       </div>
       <div className="bg-white border border-neutral-200">
         <div className="px-5 py-3 border-b border-neutral-100">
-          <div className="relative w-full md:w-72"><input type="text" placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-2.5 pr-10 focus:outline-none focus:border-black font-semibold" /><Search className="absolute right-3 top-2.5 w-4 h-4 text-neutral-400 stroke-[1.5]" /></div>
+          <div className="relative w-full md:w-72"><input type="text" placeholder="Mahsulotlarni qidirish..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-2.5 pr-10 focus:outline-none focus:border-black font-semibold" /><Search className="absolute right-3 top-2.5 w-4 h-4 text-neutral-400 stroke-[1.5]" /></div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead><tr className="text-[9px] uppercase font-bold tracking-widest text-neutral-400 border-b border-neutral-100">
-              <th className="px-5 py-3 text-left">Product</th><th className="px-5 py-3 text-left">Category</th><th className="px-5 py-3 text-left">Price</th><th className="px-5 py-3 text-left">Stock</th><th className="px-5 py-3 text-left">Status</th><th className="px-5 py-3 text-right">Actions</th>
+              <th className="px-5 py-3 text-left">Mahsulot</th><th className="px-5 py-3 text-left">Kategoriya</th><th className="px-5 py-3 text-left">Narx</th><th className="px-5 py-3 text-left">Zaxira</th><th className="px-5 py-3 text-left">Holati</th><th className="px-5 py-3 text-right">Amallar</th>
             </tr></thead>
             <tbody className="divide-y divide-neutral-50">
               {filtered.map(p => (
@@ -305,19 +314,19 @@ const ProductsTab = () => {
                   <td className="px-5 py-3 text-neutral-600">{p.category}</td>
                   <td className="px-5 py-3 font-black text-black">{fmt(p.price)}</td>
                   <td className="px-5 py-3 font-bold">{p.stock}</td>
-                  <td className="px-5 py-3">{p.stock < 10 ? <span className="text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700">Low Stock</span> : <span className="text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-green-50 text-green-700">In Stock</span>}</td>
+                  <td className="px-5 py-3">{p.stock < 10 ? <span className="text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700">Kam qoldi</span> : <span className="text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full bg-green-50 text-green-700">Zaxirada bor</span>}</td>
                   <td className="px-5 py-3 text-right"><div className="flex items-center justify-end space-x-2">
                     <button onClick={() => { setEditProduct(p); setShowModal(true); }} className="p-1.5 text-neutral-400 hover:text-black hover:bg-neutral-100 rounded"><Pencil className="w-3.5 h-3.5" /></button>
                     <button onClick={() => handleDelete(p.id)} className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div></td>
                 </tr>
               ))}
-              {filtered.length === 0 && <tr><td colSpan={6} className="px-5 py-12 text-center text-neutral-400">No products found</td></tr>}
+              {filtered.length === 0 && <tr><td colSpan={6} className="px-5 py-12 text-center text-neutral-400">Mahsulot topilmadi</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
-      {showModal && <ProductModal product={editProduct} onClose={() => setShowModal(false)} onSaved={() => { setShowModal(false); setToast(editProduct ? 'Product updated' : 'Product created'); setTimeout(() => setToast(''), 3000); }} />}
+      {showModal && <ProductModal product={editProduct} onClose={() => setShowModal(false)} onSaved={() => { setShowModal(false); setToast(editProduct ? 'Mahsulot yangilandi' : "Mahsulot qo'shildi"); setTimeout(() => setToast(''), 3000); }} />}
     </div>
   );
 };
@@ -351,7 +360,7 @@ const ChipSelect = ({
   const handleLongPressDelete = (opt: string) => {
     if (!onDeleteOption) return;
     suppressClickRef.current = true;
-    if (!confirm(`Delete "${opt}" from this list?`)) return;
+    if (!confirm(`"${opt}"ni bu ro'yxatdan o'chirmoqchimisiz?`)) return;
     onDeleteOption(opt);
     if (value === opt) onChange('');
   };
@@ -369,7 +378,7 @@ const ChipSelect = ({
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"
       >
-        <span className={value ? 'font-semibold text-black' : 'text-neutral-400'}>{value || 'None'}</span>
+        <span className={value ? 'font-semibold text-black' : 'text-neutral-400'}>{value || "Yo'q"}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-neutral-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
@@ -383,7 +392,7 @@ const ChipSelect = ({
                 onClick={() => { onChange(''); close(); }}
                 className={`w-full text-left text-xs px-3 py-2.5 hover:bg-neutral-50 ${value === '' ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600'}`}
               >
-                None
+                Yo'q
               </button>
             )}
             {options.map(opt => {
@@ -393,7 +402,7 @@ const ChipSelect = ({
                   key={opt}
                   type="button"
                   onClick={() => handleOptionClick(opt)}
-                  title={deletable ? 'Press and hold to delete' : undefined}
+                  title={deletable ? "O'chirish uchun bosib turing" : undefined}
                   {...(deletable ? longPressHandlers(() => handleLongPressDelete(opt)) : {})}
                   className={`w-full text-left text-xs px-3 py-2.5 hover:bg-neutral-50 select-none ${value === opt ? 'font-bold text-black bg-neutral-50' : 'text-neutral-600'}`}
                 >
@@ -409,10 +418,10 @@ const ChipSelect = ({
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') confirmAdd(); if (e.key === 'Escape') { setAdding(false); setInput(''); } }}
-                    placeholder="New option"
+                    placeholder="Yangi variant"
                     className="flex-1 text-xs px-2 py-1.5 border border-neutral-200 focus:outline-none focus:border-black"
                   />
-                  <button type="button" onClick={confirmAdd} className="text-[10px] font-bold uppercase text-black hover:opacity-70">Add</button>
+                  <button type="button" onClick={confirmAdd} className="text-[10px] font-bold uppercase text-black hover:opacity-70">Qo'shish</button>
                 </div>
               ) : (
                 <button
@@ -420,7 +429,7 @@ const ChipSelect = ({
                   onClick={() => setAdding(true)}
                   className="w-full flex items-center gap-1.5 text-left text-xs px-3 py-2.5 text-neutral-500 hover:text-black hover:bg-neutral-50"
                 >
-                  <Plus className="w-3 h-3" /> Add new
+                  <Plus className="w-3 h-3" /> Yangi qo'shish
                 </button>
               )}
             </div>
@@ -467,7 +476,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
   const sizeSuppressClickRef = useRef(false);
   const handleLongPressDeleteSize = (size: string) => {
     sizeSuppressClickRef.current = true;
-    if (!confirm(`Delete the "${size}" size?`)) return;
+    if (!confirm(`"${size}" o'lchamini o'chirmoqchimisiz?`)) return;
     setSelectedSizes(prev => prev.filter(s => s !== size));
   };
   const handleSizeChipClick = (size: string) => {
@@ -515,7 +524,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
   const colorSuppressClickRef = useRef(false);
   const handleDeleteColor = (c: ColorOption) => {
     colorSuppressClickRef.current = true;
-    if (!confirm(`Delete the "${c.label}" color?`)) return;
+    if (!confirm(`"${c.label}" rangini o'chirmoqchimisiz?`)) return;
     setColorOptions(prev => prev.filter(o => o.name !== c.name));
     removeColor(c.name);
     if (form.color === c.name) set('color', '');
@@ -544,7 +553,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
       }
       setImages(prev => [...prev, ...uploaded]);
     } catch (err) {
-      setUploadError((err as Error).message || 'Upload failed');
+      setUploadError((err as Error).message || 'Yuklash amalga oshmadi');
     } finally {
       setUploading(false);
     }
@@ -572,16 +581,16 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl z-10">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-sm font-black uppercase tracking-widest">{product ? 'Edit Product' : 'Add Product'}</h2>
+          <h2 className="text-sm font-black uppercase tracking-widest">{product ? 'Mahsulotni tahrirlash' : "Mahsulot qo'shish"}</h2>
           <button onClick={onClose} className="p-1 text-neutral-400 hover:text-black"><X className="w-5 h-5" /></button>
         </div>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Name</label><input value={form.name} onChange={e => set('name', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Price ($)</label><input type="number" value={form.price} onChange={e => set('price', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Nomi</label><input value={form.name} onChange={e => set('name', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Narxi ($)</label><input type="number" value={form.price} onChange={e => set('price', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Category</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Kategoriya</label>
             <ChipSelect
               options={categoryOptions}
               value={form.category}
@@ -592,7 +601,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Brand</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Brend</label>
             <ChipSelect
               options={brandOptions}
               value={form.brand}
@@ -603,11 +612,11 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Subtitle</label><input value={form.subtitle} onChange={e => set('subtitle', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Stock</label><input type="number" value={form.stock} onChange={e => set('stock', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Kichik sarlavha</label><input value={form.subtitle} onChange={e => set('subtitle', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Zaxira</label><input type="number" value={form.stock} onChange={e => set('stock', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Tag</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Teg</label>
             <ChipSelect
               options={tagOptions}
               value={form.tag}
@@ -620,7 +629,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Sizes</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">O'lchamlar</label>
             <div className="flex flex-wrap gap-2">
               {STANDARD_SIZES.map(size => {
                 const checked = selectedSizes.includes(size);
@@ -638,7 +647,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                 <span
                   key={size}
                   {...longPressHandlers(() => handleLongPressDeleteSize(size))}
-                  title="Press and hold to delete"
+                  title="O'chirish uchun bosib turing"
                   className="flex items-center gap-1.5 px-3 py-2 border border-black bg-black text-white text-xs font-bold select-none"
                 >
                   {size}
@@ -652,10 +661,10 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                     value={customSizeInput}
                     onChange={e => setCustomSizeInput(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') addCustomSize(); if (e.key === 'Escape') { setAddingCustomSize(false); setCustomSizeInput(''); } }}
-                    placeholder="e.g. OS"
+                    placeholder="masalan, OS"
                     className="w-16 text-xs px-1 py-1 focus:outline-none"
                   />
-                  <button type="button" onClick={addCustomSize} className="text-[10px] font-bold uppercase text-black hover:opacity-70">Add</button>
+                  <button type="button" onClick={addCustomSize} className="text-[10px] font-bold uppercase text-black hover:opacity-70">Qo'shish</button>
                 </span>
               ) : (
                 <button
@@ -663,14 +672,14 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                   onClick={() => setAddingCustomSize(true)}
                   className="flex items-center gap-1 px-3 py-2 border border-dashed border-neutral-300 text-xs font-bold text-neutral-500 hover:border-black hover:text-black transition-colors"
                 >
-                  <Plus className="w-3 h-3" /> Add size
+                  <Plus className="w-3 h-3" /> O'lcham qo'shish
                 </button>
               )}
             </div>
-            {selectedSizes.length === 0 && <p className="text-[10px] text-neutral-400">Select at least one size.</p>}
+            {selectedSizes.length === 0 && <p className="text-[10px] text-neutral-400">Kamida bitta o'lchamni tanlang.</p>}
           </div>
           <div className="space-y-1.5">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Color</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Rang</label>
             <div className="flex flex-wrap items-center gap-2 pt-1">
               {colorOptions.map(c => {
                 const deletable = isCustomColor(c.name);
@@ -679,7 +688,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                     key={c.name}
                     type="button"
                     onClick={() => handleColorClick(c.name)}
-                    title={deletable ? `${c.label} — press and hold to delete` : c.label}
+                    title={deletable ? `${c.label} — o'chirish uchun bosib turing` : c.label}
                     {...(deletable ? longPressHandlers(() => handleDeleteColor(c)) : {})}
                     className={`w-7 h-7 rounded-full flex items-center justify-center transition-all select-none ${form.color === c.name ? 'ring-2 ring-offset-2 ring-black' : 'hover:scale-105'} ${c.name === 'white' ? 'border border-neutral-300' : ''}`}
                     style={{ backgroundColor: c.hex }}
@@ -702,16 +711,16 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                     value={newColorLabel}
                     onChange={e => setNewColorLabel(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleAddColor(); if (e.key === 'Escape') { setAddingColor(false); setNewColorLabel(''); } }}
-                    placeholder="e.g. Navy"
+                    placeholder="masalan, Ko'k"
                     className="w-20 text-xs px-1 py-1 focus:outline-none"
                   />
-                  <button type="button" onClick={handleAddColor} className="text-[10px] font-bold uppercase text-black hover:opacity-70">Add</button>
+                  <button type="button" onClick={handleAddColor} className="text-[10px] font-bold uppercase text-black hover:opacity-70">Qo'shish</button>
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={() => setAddingColor(true)}
-                  title="Add a new color"
+                  title="Yangi rang qo'shish"
                   className="w-7 h-7 rounded-full border border-dashed border-neutral-300 flex items-center justify-center text-neutral-400 hover:border-black hover:text-black transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -719,10 +728,10 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
               )}
             </div>
           </div>
-          <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Discount % (optional)</label><input type="number" min="0" max="90" value={form.discount} onChange={e => set('discount', e.target.value)} placeholder="e.g. 20" className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+          <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Chegirma % (ixtiyoriy)</label><input type="number" min="0" max="90" value={form.discount} onChange={e => set('discount', e.target.value)} placeholder="masalan, 20" className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
 
           <div className="space-y-1">
-            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Photos</label>
+            <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Rasmlar</label>
             <div
               onDragOver={e => { e.preventDefault(); setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
@@ -740,7 +749,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
               <label htmlFor="product-image-upload" className="cursor-pointer flex flex-col items-center gap-1.5 text-neutral-400">
                 <Upload className="w-5 h-5" />
                 <span className="text-[10px] font-bold uppercase tracking-widest">
-                  {uploading ? 'Uploading...' : 'Drag & drop photos, or click to choose'}
+                  {uploading ? 'Yuklanmoqda...' : "Rasmlarni shu yerga tashlang yoki tanlash uchun bosing"}
                 </span>
               </label>
             </div>
@@ -756,11 +765,11 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                     )}
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
                       {idx !== 0 && (
-                        <button type="button" onClick={() => makeMain(idx)} title="Set as main photo" className="p-1 bg-white rounded-full">
+                        <button type="button" onClick={() => makeMain(idx)} title="Asosiy rasm qilib belgilash" className="p-1 bg-white rounded-full">
                           <ImagePlus className="w-3 h-3 text-black" />
                         </button>
                       )}
-                      <button type="button" onClick={() => removeImage(idx)} title="Remove" className="p-1 bg-white rounded-full">
+                      <button type="button" onClick={() => removeImage(idx)} title="O'chirish" className="p-1 bg-white rounded-full">
                         <X className="w-3 h-3 text-red-600" />
                       </button>
                     </div>
@@ -768,18 +777,18 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
                 ))}
               </div>
             )}
-            {images.length === 0 && <p className="text-[10px] text-neutral-400">At least one photo is required.</p>}
+            {images.length === 0 && <p className="text-[10px] text-neutral-400">Kamida bitta rasm talab qilinadi.</p>}
           </div>
 
-          <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Description</label><textarea value={form.description} onChange={e => set('description', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black min-h-[60px] resize-y" /></div>
+          <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Tavsif</label><textarea value={form.description} onChange={e => set('description', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black min-h-[60px] resize-y" /></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Material</label><input value={form.material} onChange={e => set('material', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Weight</label><input value={form.weight} onChange={e => set('weight', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Vazni</label><input value={form.weight} onChange={e => set('weight', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
         </div>
         <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-neutral-100">
-          <button onClick={onClose} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-black">Cancel</button>
-          <button onClick={handleSave} disabled={uploading || images.length === 0 || selectedSizes.length === 0} className="px-5 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest hover:opacity-90 disabled:opacity-40">{product ? 'Save Changes' : 'Add Product'}</button>
+          <button onClick={onClose} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-black">Bekor qilish</button>
+          <button onClick={handleSave} disabled={uploading || images.length === 0 || selectedSizes.length === 0} className="px-5 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest hover:opacity-90 disabled:opacity-40">{product ? "O'zgarishlarni saqlash" : "Mahsulot qo'shish"}</button>
         </div>
       </div>
     </div>
@@ -807,10 +816,10 @@ const orderBucket = (o: AdminOrder): 'new' | 'confirmed' | 'shipped' | 'cancelle
 };
 
 const ORDER_SECTIONS: { key: 'new' | 'confirmed' | 'shipped' | 'cancelled'; label: string; hint: string; rowBg: string; badgeBg: string; dotColor: string }[] = [
-  { key: 'new', label: 'New Orders', hint: 'Just placed — customer can still self-cancel', rowBg: 'bg-amber-50/70 hover:bg-amber-50', badgeBg: 'bg-amber-100 text-amber-700', dotColor: 'bg-amber-400' },
-  { key: 'confirmed', label: 'Confirmed / Processing', hint: 'Cancel window passed, being prepared', rowBg: 'bg-white hover:bg-neutral-50/50', badgeBg: 'bg-blue-50 text-blue-700', dotColor: 'bg-blue-400' },
-  { key: 'shipped', label: 'Shipped / Delivered', hint: 'On the way or completed', rowBg: 'bg-green-50/60 hover:bg-green-50', badgeBg: 'bg-green-100 text-green-700', dotColor: 'bg-green-400' },
-  { key: 'cancelled', label: 'Cancelled', hint: 'Cancelled by customer or operator', rowBg: 'bg-red-50/70 hover:bg-red-50', badgeBg: 'bg-red-100 text-red-700', dotColor: 'bg-red-400' },
+  { key: 'new', label: 'Yangi buyurtmalar', hint: "Hozirgina joylashtirildi — mijoz hali o'zi bekor qilishi mumkin", rowBg: 'bg-amber-50/70 hover:bg-amber-50', badgeBg: 'bg-amber-100 text-amber-700', dotColor: 'bg-amber-400' },
+  { key: 'confirmed', label: 'Tasdiqlangan / Qayta ishlanmoqda', hint: "Bekor qilish muddati o'tdi, tayyorlanmoqda", rowBg: 'bg-white hover:bg-neutral-50/50', badgeBg: 'bg-blue-50 text-blue-700', dotColor: 'bg-blue-400' },
+  { key: 'shipped', label: 'Yuborilgan / Yetkazilgan', hint: 'Yo\'lda yoki yakunlangan', rowBg: 'bg-green-50/60 hover:bg-green-50', badgeBg: 'bg-green-100 text-green-700', dotColor: 'bg-green-400' },
+  { key: 'cancelled', label: 'Bekor qilingan', hint: 'Mijoz yoki operator tomonidan bekor qilingan', rowBg: 'bg-red-50/70 hover:bg-red-50', badgeBg: 'bg-red-100 text-red-700', dotColor: 'bg-red-400' },
 ];
 
 const OrdersTab = () => {
@@ -849,7 +858,7 @@ const OrdersTab = () => {
 
   const handleStatus = async (orderId: string, status: string) => {
     await updateOrderStatus(orderId, status); reload();
-    setToast('Order updated'); setTimeout(() => setToast(''), 3000);
+    setToast('Buyurtma yangilandi'); setTimeout(() => setToast(''), 3000);
   };
 
   const [sendingId, setSendingId] = useState<string | null>(null);
@@ -857,9 +866,9 @@ const OrdersTab = () => {
     setSendingId(orderId);
     try {
       await notifyOrderStatus(orderId);
-      setToast('Sent to customer on Telegram');
+      setToast('Mijozga Telegram orqali yuborildi');
     } catch (err) {
-      setToast((err as Error).message || 'Failed to send');
+      setToast((err as Error).message || 'Yuborish amalga oshmadi');
     } finally {
       setSendingId(null);
       setTimeout(() => setToast(''), 3500);
@@ -877,26 +886,26 @@ const OrdersTab = () => {
   return (
     <div className="space-y-6">
       {toast && <div className="fixed top-4 right-4 z-50 bg-black text-white text-xs font-bold uppercase py-3 px-5 tracking-widest">{toast}</div>}
-      <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Orders</h1><p className="text-xs text-neutral-400 font-medium">{orders.length} orders</p></div>
+      <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Buyurtmalar</h1><p className="text-xs text-neutral-400 font-medium">{orders.length} buyurtma</p></div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {[
-          { label: 'Total', count: orders.length },
-          { label: 'New', count: orders.filter(isNewOrder).length },
-          { label: 'Confirmed', count: orders.filter(o => orderBucket(o) === 'confirmed').length },
-          { label: 'Shipped', count: orders.filter(o => orderBucket(o) === 'shipped').length },
-          { label: 'Cancelled', count: orders.filter(o => orderBucket(o) === 'cancelled').length },
+          { label: 'Jami', count: orders.length },
+          { label: 'Yangi', count: orders.filter(isNewOrder).length },
+          { label: 'Tasdiqlangan', count: orders.filter(o => orderBucket(o) === 'confirmed').length },
+          { label: 'Yuborilgan', count: orders.filter(o => orderBucket(o) === 'shipped').length },
+          { label: 'Bekor qilingan', count: orders.filter(o => orderBucket(o) === 'cancelled').length },
         ].map(s => (<div key={s.label} className="bg-white border border-neutral-200 p-3 text-center"><div className="text-lg font-black">{s.count}</div><span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">{s.label}</span></div>))}
       </div>
 
       <div className="bg-white border border-neutral-200 px-5 py-3 flex items-center justify-between gap-3">
-        <div className="relative w-full md:w-72"><input type="text" placeholder="Search orders..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-2.5 pr-10 focus:outline-none focus:border-black font-semibold" /><Search className="absolute right-3 top-2.5 w-4 h-4 text-neutral-400 stroke-[1.5]" /></div>
+        <div className="relative w-full md:w-72"><input type="text" placeholder="Buyurtmalarni qidirish..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-2.5 pr-10 focus:outline-none focus:border-black font-semibold" /><Search className="absolute right-3 top-2.5 w-4 h-4 text-neutral-400 stroke-[1.5]" /></div>
         <button
           onClick={manualRefresh}
           disabled={refreshing}
           className="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500 border border-neutral-200 px-3 py-2.5 hover:border-black hover:text-black transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
+          Yangilash
         </button>
       </div>
 
@@ -914,12 +923,12 @@ const OrdersTab = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead><tr className="text-[9px] uppercase font-bold tracking-widest text-neutral-400 border-b border-neutral-100">
-                  <th className="px-5 py-3 text-left">ID</th><th className="px-5 py-3 text-left">Customer</th><th className="px-5 py-3 text-left">Items</th><th className="px-5 py-3 text-left">Total</th><th className="px-5 py-3 text-left">Status</th><th className="px-5 py-3 text-right">Action</th>
+                  <th className="px-5 py-3 text-left">ID</th><th className="px-5 py-3 text-left">Mijoz</th><th className="px-5 py-3 text-left">Mahsulotlar</th><th className="px-5 py-3 text-left">Jami</th><th className="px-5 py-3 text-left">Holati</th><th className="px-5 py-3 text-right">Amal</th>
                 </tr></thead>
                 <tbody className="divide-y divide-neutral-100">
                   {sectionOrders.map(o => {
                     const oid = o.id || o.orderId || 'ORD-UNKNOWN';
-                    const cname = o.customer_name || o.customerName || 'Guest';
+                    const cname = o.customer_name || o.customerName || 'Mehmon';
                     const tot = typeof o.total === 'number' ? o.total : (typeof o.amount === 'number' ? o.amount : 0);
                     return (
                       <tr key={oid} className={`cursor-pointer transition-colors ${section.rowBg}`} onClick={() => setViewOrder(o)}>
@@ -928,7 +937,7 @@ const OrdersTab = () => {
                         <td className="px-5 py-3">{o.items?.length || 0}</td>
                         <td className="px-5 py-3 font-black text-black">{fmt(tot)}</td>
                         <td className="px-5 py-3">
-                          <span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${statusBadge(o.status)}`}>{o.status}</span>
+                          <span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${statusBadge(o.status)}`}>{statusLabel(o.status)}</span>
                           {section.key === 'new' && (
                             <span className="ml-2 inline-flex items-center gap-1 text-[9px] font-bold text-amber-700">
                               <Clock className="w-3 h-3" />{remainingLabel(o)}
@@ -938,12 +947,12 @@ const OrdersTab = () => {
                         <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-2">
                             <select value={o.status} onChange={e => handleStatus(oid, e.target.value)} className="text-[10px] font-bold uppercase tracking-wider border border-neutral-200 px-2 py-1.5 bg-white cursor-pointer focus:outline-none focus:border-black">
-                              <option value="PENDING">Pending</option><option value="PROCESSING">Processing</option><option value="SHIPPED">Shipped</option><option value="DELIVERED">Delivered</option><option value="CANCELLED">Cancelled</option>
+                              <option value="PENDING">Kutilmoqda</option><option value="PROCESSING">Qayta ishlanmoqda</option><option value="SHIPPED">Yuborildi</option><option value="DELIVERED">Yetkazildi</option><option value="CANCELLED">Bekor qilindi</option>
                             </select>
                             <button
                               onClick={() => handleNotify(oid)}
                               disabled={sendingId === oid}
-                              title="Notify customer on Telegram"
+                              title="Mijozga Telegram orqali xabar berish"
                               className="flex-shrink-0 p-2 border border-[#229ED9]/30 text-[#229ED9] hover:bg-[#229ED9]/10 transition-colors disabled:opacity-50"
                             >
                               <Send className={`w-3.5 h-3.5 ${sendingId === oid ? 'animate-pulse' : ''}`} />
@@ -960,7 +969,7 @@ const OrdersTab = () => {
         );
       })}
       {filtered.length === 0 && (
-        <div className="bg-white border border-neutral-200 px-5 py-12 text-center text-neutral-400 text-xs">No orders yet</div>
+        <div className="bg-white border border-neutral-200 px-5 py-12 text-center text-neutral-400 text-xs">Hozircha buyurtmalar yo'q</div>
       )}
       {viewOrder && <OrderDetailModal order={viewOrder} onClose={() => setViewOrder(null)} />}
     </div>
@@ -981,7 +990,7 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
       setNotifyState('sent');
     } catch (err) {
       setNotifyState('error');
-      setNotifyMsg((err as Error).message || 'Failed to send');
+      setNotifyMsg((err as Error).message || 'Yuborish amalga oshmadi');
     }
   };
 
@@ -999,34 +1008,34 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
 
         <div className="space-y-5">
           <div>
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Customer</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Mijoz</h3>
             <div className="bg-neutral-50 rounded-xl p-4 space-y-1 text-xs">
-              <p className="font-bold text-black">{order.customer_name || order.customerName || 'Guest'}</p>
+              <p className="font-bold text-black">{order.customer_name || order.customerName || 'Mehmon'}</p>
               {order.customer_email && <p className="text-neutral-500">{order.customer_email}</p>}
             </div>
           </div>
 
           <div>
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Delivery Details</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Yetkazib berish ma'lumotlari</h3>
             {addr ? (
               <div className="bg-neutral-50 rounded-xl p-4 space-y-2 text-xs">
                 <div className="grid grid-cols-2 gap-2">
-                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Name</span><span className="font-semibold text-black">{addr.first_name} {addr.last_name}</span></div>
-                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Phone</span><span className="font-semibold text-black">{addr.phone}</span></div>
-                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">City</span><span className="font-semibold text-black">{addr.city}</span></div>
-                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">District</span><span className="font-semibold text-black">{addr.district}</span></div>
-                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Neighborhood</span><span className="font-semibold text-black">{addr.neighborhood}</span></div>
-                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">House / Street</span><span className="font-semibold text-black">{addr.house_number}</span></div>
-                  {addr.postal_code && <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Postal Code</span><span className="font-semibold text-black">{addr.postal_code}</span></div>}
+                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Ism</span><span className="font-semibold text-black">{addr.first_name} {addr.last_name}</span></div>
+                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Telefon</span><span className="font-semibold text-black">{addr.phone}</span></div>
+                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Shahar</span><span className="font-semibold text-black">{addr.city}</span></div>
+                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Tuman</span><span className="font-semibold text-black">{addr.district}</span></div>
+                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Mahalla</span><span className="font-semibold text-black">{addr.neighborhood}</span></div>
+                  <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Uy / Ko'cha</span><span className="font-semibold text-black">{addr.house_number}</span></div>
+                  {addr.postal_code && <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Pochta indeksi</span><span className="font-semibold text-black">{addr.postal_code}</span></div>}
                 </div>
               </div>
             ) : (
-              <p className="text-xs text-neutral-400 italic">No delivery details submitted for this order.</p>
+              <p className="text-xs text-neutral-400 italic">Bu buyurtma uchun yetkazib berish ma'lumotlari kiritilmagan.</p>
             )}
           </div>
 
           <div>
-            <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Items</h3>
+            <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Mahsulotlar</h3>
             <div className="border border-neutral-100 rounded-xl divide-y divide-neutral-50">
               {(order.items || []).map((item, idx) => (
                 <div key={idx} className="flex items-center gap-3 px-4 py-2.5 text-xs">
@@ -1039,7 +1048,7 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
                     <p className="font-semibold text-black truncate">{item.name} <span className="text-neutral-400">&times;{item.quantity}</span></p>
                     {(item.size || item.color) && (
                       <p className="text-[10px] text-neutral-400 font-medium">
-                        {[item.color, item.size ? `Size ${item.size}` : null].filter(Boolean).join(' · ')}
+                        {[item.color, item.size ? `O'lcham ${item.size}` : null].filter(Boolean).join(' · ')}
                       </p>
                     )}
                   </div>
@@ -1050,7 +1059,7 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
           </div>
 
           <div className="flex justify-between items-baseline border-t border-neutral-100 pt-4">
-            <span className="text-xs font-bold uppercase tracking-widest text-black">Total</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-black">Jami</span>
             <span className="text-lg font-black text-black">{fmt(order.total ?? order.amount ?? 0)}</span>
           </div>
 
@@ -1060,7 +1069,7 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
             className="w-full flex items-center justify-center gap-2 bg-[#229ED9] text-white rounded-xl text-xs font-bold uppercase py-3 tracking-widest hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
-            {notifyState === 'sending' ? 'Sending...' : notifyState === 'sent' ? 'Sent!' : 'Notify Customer on Telegram'}
+            {notifyState === 'sending' ? 'Yuborilmoqda...' : notifyState === 'sent' ? 'Yuborildi!' : 'Mijozga Telegram orqali xabar berish'}
           </button>
           {notifyState === 'error' && (
             <p className="text-[10px] font-bold text-red-600 text-center -mt-2">{notifyMsg}</p>
@@ -1094,7 +1103,7 @@ const CustomersTab = () => {
     const total = own.reduce((s, o) => s + (o.total || 0), 0);
     return {
       id: u.id,
-      name: u.full_name || u.email || u.phone || 'Unnamed',
+      name: u.full_name || u.email || u.phone || 'Nomsiz',
       email: u.email || '-',
       phone: u.phone || '-',
       orders: own.length,
@@ -1107,14 +1116,14 @@ const CustomersTab = () => {
   const fdate = (iso: string) => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
   const runAction = async (id: string, action: 'ban' | 'unban' | 'delete') => {
-    if (action === 'delete' && !confirm('Permanently delete this customer account? This cannot be undone.')) return;
+    if (action === 'delete' && !confirm("Bu mijoz hisobini butunlay o'chirmoqchimisiz? Buni ortga qaytarib bo'lmaydi.")) return;
     setBusyId(id);
     try {
       if (action === 'ban') await banUser(id);
       else if (action === 'unban') await unbanUser(id);
       else await deleteUser(id);
       reload();
-      setToast(action === 'ban' ? 'Customer banned' : action === 'unban' ? 'Customer unbanned' : 'Customer deleted');
+      setToast(action === 'ban' ? 'Mijoz bloklandi' : action === 'unban' ? 'Mijoz blokdan chiqarildi' : "Mijoz o'chirildi");
       setTimeout(() => setToast(''), 3000);
     } catch (e) {
       setToast((e as Error).message);
@@ -1127,19 +1136,19 @@ const CustomersTab = () => {
   return (
     <div className="space-y-6">
       {toast && <div className="fixed top-4 right-4 z-50 bg-black text-white text-xs font-bold uppercase py-3 px-5 tracking-widest">{toast}</div>}
-      <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Customers</h1><p className="text-xs text-neutral-400 font-medium">{customers.length} registered {customers.length === 1 ? 'customer' : 'customers'}</p></div>
+      <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Mijozlar</h1><p className="text-xs text-neutral-400 font-medium">{customers.length} ro'yxatdan o'tgan {customers.length === 1 ? 'mijoz' : 'mijoz'}</p></div>
       <div className="bg-white border border-neutral-200">
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead><tr className="text-[9px] uppercase font-bold tracking-widest text-neutral-400 border-b border-neutral-100">
-              <th className="px-5 py-3 text-left">Customer</th><th className="px-5 py-3 text-left">Email</th><th className="px-5 py-3 text-left">Phone</th><th className="px-5 py-3 text-left">Orders</th><th className="px-5 py-3 text-left">Total Spent</th><th className="px-5 py-3 text-left">Joined</th><th className="px-5 py-3 text-right">Actions</th>
+              <th className="px-5 py-3 text-left">Mijoz</th><th className="px-5 py-3 text-left">Email</th><th className="px-5 py-3 text-left">Telefon</th><th className="px-5 py-3 text-left">Buyurtmalar</th><th className="px-5 py-3 text-left">Jami sarflangan</th><th className="px-5 py-3 text-left">Qo'shilgan</th><th className="px-5 py-3 text-right">Amallar</th>
             </tr></thead>
             <tbody className="divide-y divide-neutral-50">
-              {loading && <tr><td colSpan={7} className="px-5 py-12 text-center text-neutral-400">Loading...</td></tr>}
+              {loading && <tr><td colSpan={7} className="px-5 py-12 text-center text-neutral-400">Yuklanmoqda...</td></tr>}
               {!loading && customers.map((c) => (<tr key={c.id} className="hover:bg-neutral-50/50">
                 <td className="px-5 py-3 font-bold text-black flex items-center gap-2">
                   {c.name}
-                  {c.banned && <span className="text-[8px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full bg-red-50 text-red-600">Banned</span>}
+                  {c.banned && <span className="text-[8px] font-black tracking-widest uppercase px-2 py-0.5 rounded-full bg-red-50 text-red-600">Bloklangan</span>}
                 </td>
                 <td className="px-5 py-3 text-neutral-500">{c.email}</td>
                 <td className="px-5 py-3 text-neutral-500">{c.phone}</td>
@@ -1153,19 +1162,19 @@ const CustomersTab = () => {
                       onClick={() => runAction(c.id, c.banned ? 'unban' : 'ban')}
                       className="text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 border border-neutral-200 text-neutral-600 hover:border-neutral-400 disabled:opacity-50"
                     >
-                      {c.banned ? 'Unban' : 'Ban'}
+                      {c.banned ? 'Blokdan chiqarish' : 'Bloklash'}
                     </button>
                     <button
                       disabled={busyId === c.id}
                       onClick={() => runAction(c.id, 'delete')}
                       className="text-[9px] font-bold uppercase tracking-widest px-3 py-1.5 border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-50"
                     >
-                      Delete
+                      O'chirish
                     </button>
                   </div>
                 </td>
               </tr>))}
-              {!loading && customers.length === 0 && <tr><td colSpan={7} className="px-5 py-12 text-center text-neutral-400">No registered customers yet</td></tr>}
+              {!loading && customers.length === 0 && <tr><td colSpan={7} className="px-5 py-12 text-center text-neutral-400">Hozircha ro'yxatdan o'tgan mijozlar yo'q</td></tr>}
             </tbody>
           </table>
         </div>
@@ -1186,48 +1195,48 @@ const AccountingTab = () => {
   const fdate = (iso: string) => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '-';
 
   if (!summary) {
-    return <div className="text-xs text-neutral-400 font-medium">Loading...</div>;
+    return <div className="text-xs text-neutral-400 font-medium">Yuklanmoqda...</div>;
   }
 
   return (
     <div className="space-y-6">
       {toast && <div className="fixed top-4 right-4 z-50 bg-black text-white text-xs font-bold uppercase py-3 px-5 tracking-widest">{toast}</div>}
-      <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Accounting</h1><p className="text-xs text-neutral-400 font-medium">Financial overview.</p></div>
+      <div className="hidden lg:block"><h1 className="text-2xl font-black uppercase tracking-tight">Hisob-kitob</h1><p className="text-xs text-neutral-400 font-medium">Moliyaviy umumiy ko'rinish.</p></div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Revenue', value: fmt(summary.total_revenue) },
-          { label: 'Expenses', value: fmt(summary.expenses) },
-          { label: 'Net Profit', value: fmt(summary.net_profit) },
-          { label: 'Avg Order', value: fmt(summary.avg_order) },
+          { label: 'Daromad', value: fmt(summary.total_revenue) },
+          { label: 'Xarajatlar', value: fmt(summary.expenses) },
+          { label: 'Sof foyda', value: fmt(summary.net_profit) },
+          { label: "O'rtacha buyurtma", value: fmt(summary.avg_order) },
         ].map(s => (<div key={s.label} className="bg-white border border-neutral-200 p-4"><span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block mb-1">{s.label}</span><div className="text-lg font-black">{s.value}</div></div>))}
       </div>
       <div className="bg-white border border-neutral-200">
         <div className="px-5 py-4 border-b border-neutral-100 flex justify-between items-center">
-          <h3 className="text-xs font-black uppercase tracking-wider">Transactions</h3>
-          <button onClick={() => setShowModal(true)} className="flex items-center space-x-2 bg-black text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:opacity-90"><Plus className="w-3.5 h-3.5" /><span>Add Transaction</span></button>
+          <h3 className="text-xs font-black uppercase tracking-wider">Tranzaksiyalar</h3>
+          <button onClick={() => setShowModal(true)} className="flex items-center space-x-2 bg-black text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:opacity-90"><Plus className="w-3.5 h-3.5" /><span>Tranzaksiya qo'shish</span></button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead><tr className="text-[9px] uppercase font-bold tracking-widest text-neutral-400 border-b border-neutral-100">
-              <th className="px-5 py-3 text-left">ID</th><th className="px-5 py-3 text-left">Type</th><th className="px-5 py-3 text-left">Category</th><th className="px-5 py-3 text-left">Amount</th><th className="px-5 py-3 text-left">Description</th><th className="px-5 py-3 text-left">Date</th>
+              <th className="px-5 py-3 text-left">ID</th><th className="px-5 py-3 text-left">Turi</th><th className="px-5 py-3 text-left">Kategoriya</th><th className="px-5 py-3 text-left">Miqdori</th><th className="px-5 py-3 text-left">Tavsif</th><th className="px-5 py-3 text-left">Sana</th>
             </tr></thead>
             <tbody className="divide-y divide-neutral-50">
               {txns.map(t => (
                 <tr key={t.id} className="hover:bg-neutral-50/50">
                   <td className="px-5 py-3 font-bold text-black">{t.id}</td>
-                  <td className="px-5 py-3"><span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${t.type === 'income' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{t.type}</span></td>
+                  <td className="px-5 py-3"><span className={`text-[8px] font-black tracking-widest uppercase px-2.5 py-1 rounded-full ${t.type === 'income' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>{t.type === 'income' ? 'Daromad' : 'Xarajat'}</span></td>
                   <td className="px-5 py-3 text-neutral-600">{t.category}</td>
                   <td className={`px-5 py-3 font-black ${t.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>{t.type === 'income' ? '+' : '-'}{fmt(t.amount)}</td>
                   <td className="px-5 py-3 text-neutral-600">{t.description}</td>
                   <td className="px-5 py-3 text-neutral-500">{fdate(t.created_at)}</td>
                 </tr>
               ))}
-              {txns.length === 0 && <tr><td colSpan={6} className="px-5 py-12 text-center text-neutral-400">No transactions yet</td></tr>}
+              {txns.length === 0 && <tr><td colSpan={6} className="px-5 py-12 text-center text-neutral-400">Hozircha tranzaksiyalar yo'q</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
-      {showModal && <TransactionModal onClose={() => setShowModal(false)} onSaved={() => { setShowModal(false); setToast('Transaction added'); setTimeout(() => setToast(''), 3000); }} />}
+      {showModal && <TransactionModal onClose={() => setShowModal(false)} onSaved={() => { setShowModal(false); setToast("Tranzaksiya qo'shildi"); setTimeout(() => setToast(''), 3000); }} />}
     </div>
   );
 };
@@ -1244,24 +1253,24 @@ const TransactionModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: 
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white w-full max-w-md p-6 shadow-2xl z-10">
-        <div className="flex justify-between items-center mb-6"><h2 className="text-sm font-black uppercase tracking-widest">Add Transaction</h2><button onClick={onClose} className="p-1 text-neutral-400 hover:text-black"><X className="w-5 h-5" /></button></div>
+        <div className="flex justify-between items-center mb-6"><h2 className="text-sm font-black uppercase tracking-widest">Tranzaksiya qo'shish</h2><button onClick={onClose} className="p-1 text-neutral-400 hover:text-black"><X className="w-5 h-5" /></button></div>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Type</label>
-              <select value={form.type} onChange={e => set('type', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"><option value="expense">Expense</option><option value="income">Income</option></select></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Amount ($)</label>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Turi</label>
+              <select value={form.type} onChange={e => set('type', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"><option value="expense">Xarajat</option><option value="income">Daromad</option></select></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Miqdori ($)</label>
               <input type="number" value={form.amount} onChange={e => set('amount', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Category</label>
-              <select value={form.category} onChange={e => set('category', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"><option value="supplies">Supplies</option><option value="shipping">Shipping</option><option value="marketing">Marketing</option><option value="rent">Rent</option><option value="other">Other</option></select></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Description</label>
-              <input value={form.description} onChange={e => set('description', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" placeholder="Description" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Kategoriya</label>
+              <select value={form.category} onChange={e => set('category', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"><option value="supplies">Materiallar</option><option value="shipping">Yetkazib berish</option><option value="marketing">Marketing</option><option value="rent">Ijara</option><option value="other">Boshqa</option></select></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Tavsif</label>
+              <input value={form.description} onChange={e => set('description', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" placeholder="Tavsif" /></div>
           </div>
         </div>
         <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-neutral-100">
-          <button onClick={onClose} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-black">Cancel</button>
-          <button onClick={handleSave} className="px-5 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest hover:opacity-90">Save</button>
+          <button onClick={onClose} className="px-5 py-2.5 text-xs font-bold uppercase tracking-widest text-neutral-500 hover:text-black">Bekor qilish</button>
+          <button onClick={handleSave} className="px-5 py-2.5 bg-black text-white text-xs font-bold uppercase tracking-widest hover:opacity-90">Saqlash</button>
         </div>
       </div>
     </div>

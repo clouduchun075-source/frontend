@@ -10,20 +10,20 @@ export interface Country {
 
 // Ordered so the most likely choices sit at the top.
 export const COUNTRIES: Country[] = [
-  { name: 'Uzbekistan', dial: '+998', groups: [2, 3, 2, 2] },
-  { name: 'Kazakhstan', dial: '+7', groups: [3, 3, 2, 2] },
-  { name: 'Russia', dial: '+7', groups: [3, 3, 2, 2] },
-  { name: 'Kyrgyzstan', dial: '+996', groups: [3, 3, 3] },
-  { name: 'Tajikistan', dial: '+992', groups: [2, 3, 4] },
-  { name: 'Turkmenistan', dial: '+993', groups: [2, 6] },
-  { name: 'Turkey', dial: '+90', groups: [3, 3, 2, 2] },
-  { name: 'United States', dial: '+1', groups: [3, 3, 4] },
-  { name: 'United Kingdom', dial: '+44', groups: [4, 6] },
-  { name: 'Germany', dial: '+49', groups: [3, 8] },
-  { name: 'United Arab Emirates', dial: '+971', groups: [2, 3, 4] },
-  { name: 'South Korea', dial: '+82', groups: [2, 4, 4] },
-  { name: 'China', dial: '+86', groups: [3, 4, 4] },
-  { name: 'India', dial: '+91', groups: [5, 5] },
+  { name: 'O\'zbekiston', dial: '+998', groups: [2, 3, 2, 2] },
+  { name: 'Qozog\'iston', dial: '+7', groups: [3, 3, 2, 2] },
+  { name: 'Rossiya', dial: '+7', groups: [3, 3, 2, 2] },
+  { name: 'Qirg\'iziston', dial: '+996', groups: [3, 3, 3] },
+  { name: 'Tojikiston', dial: '+992', groups: [2, 3, 4] },
+  { name: 'Turkmaniston', dial: '+993', groups: [2, 6] },
+  { name: 'Turkiya', dial: '+90', groups: [3, 3, 2, 2] },
+  { name: 'AQSH', dial: '+1', groups: [3, 3, 4] },
+  { name: 'Buyuk Britaniya', dial: '+44', groups: [4, 6] },
+  { name: 'Germaniya', dial: '+49', groups: [3, 8] },
+  { name: 'Birlashgan Arab Amirliklari', dial: '+971', groups: [2, 3, 4] },
+  { name: 'Janubiy Koreya', dial: '+82', groups: [2, 4, 4] },
+  { name: 'Xitoy', dial: '+86', groups: [3, 4, 4] },
+  { name: 'Hindiston', dial: '+91', groups: [5, 5] },
 ];
 
 const totalDigits = (c: Country) => c.groups.reduce((a, b) => a + b, 0);
@@ -128,7 +128,7 @@ export const PhoneInput = ({ value, onChange }: Props) => {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             className="absolute inset-0 w-full h-full bg-transparent px-4 text-sm text-transparent caret-transparent focus:outline-none"
-            aria-label="Phone number"
+            aria-label="Telefon raqami"
           />
           <div className="px-4 py-3.5 text-sm tracking-[0.15em] font-medium pointer-events-none select-none whitespace-pre">
             {(() => {
@@ -157,7 +157,7 @@ export const PhoneInput = ({ value, onChange }: Props) => {
 
       {/* Helper: how many digits are still needed */}
       <p className="text-[10px] text-neutral-400 dark:text-neutral-500 mt-1.5 ml-5">
-        {filled === max ? 'Looks good' : `${filled}/${max} digits`}
+        {filled === max ? 'Ajoyib' : `${filled}/${max} raqam`}
       </p>
 
       {/* Country dropdown */}

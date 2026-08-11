@@ -48,7 +48,7 @@ export const ProductDetails = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-900 flex items-center justify-center transition-colors">
-        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 animate-pulse">Loading...</div>
+        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 animate-pulse">Yuklanmoqda...</div>
       </div>
     );
   }
@@ -57,13 +57,13 @@ export const ProductDetails = () => {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-900 flex items-center justify-center transition-colors">
         <div className="text-center space-y-4">
-          <h1 className="text-xl font-black uppercase tracking-widest text-black dark:text-white">Product Not Found</h1>
-          <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">The product you're looking for doesn't exist.</p>
+          <h1 className="text-xl font-black uppercase tracking-widest text-black dark:text-white">Mahsulot topilmadi</h1>
+          <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Siz izlagan mahsulot mavjud emas.</p>
           <button
             onClick={() => navigate('/collections')}
             className="bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90"
           >
-            Back to Collections
+            Kolleksiyalarga qaytish
           </button>
         </div>
       </div>
@@ -85,7 +85,7 @@ export const ProductDetails = () => {
 
   const localizedDesc = t(`prod_${product.id}_desc` as any) !== `prod_${product.id}_desc`
     ? t(`prod_${product.id}_desc` as any)
-    : (product.description || 'Crafted from premium materials with architectural precision.');
+    : (product.description || 'Yuqori sifatli materiallardan aniqlik bilan ishlangan.');
 
   const handleAddToCart = () => {
     addToCart({
@@ -99,7 +99,7 @@ export const ProductDetails = () => {
       subtitle: `${localizedSubtitle} / SIZE ${selectedSize}`,
     });
     
-    setToastMessage('Added to Bag successfully');
+    setToastMessage('Savatga muvaffaqiyatli qo\'shildi');
     setShowToast(true);
     setTimeout(() => setShowToast(false), 3000);
   };
@@ -115,21 +115,21 @@ export const ProductDetails = () => {
       author: 'Alexander K.',
       verified: true,
       rating: 5,
-      comment: '"The weight of this piece is incredible. It feels substantial without being bulky. The oversized fit is perfectly calculated."',
+      comment: '"Bu mahsulotning vazni ajoyib. U og\'ir tuyulmasdan ham puxta his qilinadi. Keng o\'lchamli fasoni juda mukammal hisoblangan."',
       img: 'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&q=80&w=150',
     },
     {
       author: 'Sophia M.',
       verified: true,
       rating: 5,
-      comment: '"Beautiful construction. The premium materials are noticeable from the first touch. Best investment piece this season."',
+      comment: '"Chiroyli ishlangan. Yuqori sifatli materiallar birinchi tegishdanoq sezilib turadi. Bu mavsumdagi eng yaxshi xarid."',
       img: null,
     },
     {
       author: 'James L.',
       verified: true,
       rating: 5,
-      comment: '"Finally found a piece that actually holds its shape after washing. The double-layered construction is a game changer."',
+      comment: '"Nihoyat, yuvishdan keyin ham shaklini yo\'qotmaydigan mahsulot topdim. Ikki qatlamli konstruksiya juda ajoyib."',
       img: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=150',
     },
   ];
@@ -139,13 +139,13 @@ export const ProductDetails = () => {
       author: 'Marcus T.',
       verified: true,
       rating: 5,
-      comment: '"The silhouette is exactly what I\'ve been looking for. It has that architectural stiffness that keeps its shape even after washing. Truly premium."',
+      comment: '"Men aynan shu siluetni izlagandim. U yuvishdan keyin ham shaklini saqlab qoladi. Haqiqatan ham premium sifat."',
     },
     {
       author: 'Elena S.',
       verified: true,
       rating: 5,
-      comment: '"Sizing is very oversized. I\'m usually an M but ordered an S and it\'s perfect. The weight of the fabric is incredible for winter."',
+      comment: '"O\'lchamlar juda keng. Odatda M kiyman, lekin S buyurtma qildim va u mukammal chiqdi. Qish uchun matoning vazni ajoyib."',
     },
   ];
 
@@ -155,7 +155,7 @@ export const ProductDetails = () => {
       {showToast && (
         <div className="fixed top-20 right-4 md:right-8 z-50 bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-4 px-6 tracking-widest flex items-center space-x-3 shadow-2xl animate-slide-in">
           <Check className="w-4 h-4 text-green-600 dark:text-green-700 stroke-[3.5]" />
-          <span>{toastMessage || 'Added to Bag successfully'}</span>
+          <span>{toastMessage || 'Savatga muvaffaqiyatli qo\'shildi'}</span>
         </div>
       )}
 
@@ -164,13 +164,13 @@ export const ProductDetails = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSizeGuide(false)} />
           <div className="relative bg-white dark:bg-neutral-950 p-6 md:p-8 max-w-md w-full mx-4 shadow-2xl border border-neutral-100 dark:border-neutral-800 z-10 text-black dark:text-white">
-            <h3 className="text-sm font-black uppercase tracking-widest mb-4">Size Guide</h3>
+            <h3 className="text-sm font-black uppercase tracking-widest mb-4">O'lcham qo'llanmasi</h3>
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-[9px] uppercase font-bold tracking-widest text-neutral-400 dark:text-neutral-500 border-b border-neutral-100 dark:border-neutral-800">
-                  <th className="pb-2 text-left">Size</th>
-                  <th className="pb-2 text-left">Chest</th>
-                  <th className="pb-2 text-left">Length</th>
+                  <th className="pb-2 text-left">O'lcham</th>
+                  <th className="pb-2 text-left">Ko'krak</th>
+                  <th className="pb-2 text-left">Uzunlik</th>
                 </tr>
               </thead>
               <tbody className="text-neutral-750 dark:text-neutral-350 font-medium">
@@ -186,7 +186,7 @@ export const ProductDetails = () => {
               onClick={() => setShowSizeGuide(false)}
               className="mt-6 w-full bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase py-3 tracking-widest hover:opacity-90 transition-colors"
             >
-              Close
+              Yopish
             </button>
           </div>
         </div>
@@ -200,14 +200,14 @@ export const ProductDetails = () => {
             className="flex items-center space-x-2 text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white"
           >
             <ArrowLeft className="w-4 h-4 stroke-[2]" />
-            <span>Back</span>
+            <span>Orqaga</span>
           </button>
         </div>
 
         <nav className="hidden md:flex text-[9px] uppercase font-bold tracking-widest text-neutral-400 dark:text-neutral-500 items-center space-x-1.5 mb-8">
-          <span className="cursor-pointer hover:text-black dark:hover:text-white" onClick={() => navigate('/')}>Home</span>
+          <span className="cursor-pointer hover:text-black dark:hover:text-white" onClick={() => navigate('/')}>Bosh sahifa</span>
           <span>&gt;</span>
-          <span className="cursor-pointer hover:text-black dark:hover:text-white" onClick={() => navigate('/collections')}>Collections</span>
+          <span className="cursor-pointer hover:text-black dark:hover:text-white" onClick={() => navigate('/collections')}>Kolleksiyalar</span>
           <span>&gt;</span>
           <span className="text-black dark:text-white">{product.name}</span>
         </nav>
@@ -250,7 +250,7 @@ export const ProductDetails = () => {
                     className={`w-2 h-2 rounded-full border ${
                       activeImageIndex === idx ? 'bg-black border-black dark:bg-white dark:border-white' : 'bg-white/60 border-white/20'
                     }`}
-                    aria-label={`Go to slide ${idx + 1}`}
+                    aria-label={`${idx + 1}-slaydga o'tish`}
                   />
                 ))}
               </div>
@@ -289,24 +289,24 @@ export const ProductDetails = () => {
             <div className="grid grid-cols-2 border-t border-b border-neutral-100 dark:border-neutral-800 py-5 gap-4">
               <div className="space-y-1">
                 <span className="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">Material</span>
-                <span className="text-xs font-bold text-black dark:text-white tracking-wide">{product.material || 'Premium Cotton'}</span>
+                <span className="text-xs font-bold text-black dark:text-white tracking-wide">{product.material || 'Premium paxta'}</span>
               </div>
               <div className="space-y-1">
-                <span className="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">Weight</span>
-                <span className="text-xs font-bold text-black dark:text-white tracking-wide">{product.weight || 'Standard'}</span>
+                <span className="text-[9px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">Vazn</span>
+                <span className="text-xs font-bold text-black dark:text-white tracking-wide">{product.weight || 'Standart'}</span>
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Select Size</span>
-                <button 
+                <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">O'lchamni tanlang</span>
+                <button
                   onClick={() => setShowSizeGuide(true)}
                   className="text-[10px] font-bold text-neutral-800 dark:text-neutral-200 uppercase tracking-widest flex items-center space-x-1 hover:opacity-75 focus:outline-none"
                 >
                   <HelpCircle className="w-3.5 h-3.5 stroke-[1.5]" />
-                  <span className="hidden md:inline">Find My Size</span>
-                  <span className="md:hidden">Size Guide</span>
+                  <span className="hidden md:inline">O'lchamimni topish</span>
+                  <span className="md:hidden">O'lcham qo'llanmasi</span>
                 </button>
               </div>
 
@@ -332,7 +332,7 @@ export const ProductDetails = () => {
 
             <div className="hidden md:flex flex-col space-y-3">
               <div className="flex items-center space-x-4 mb-2">
-                <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Quantity</span>
+                <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Miqdor</span>
                 <div className="flex items-center border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-800">
                   <button
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -353,7 +353,7 @@ export const ProductDetails = () => {
                 onClick={handleAddToCart}
                 className="w-full bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-4.5 tracking-widest hover:opacity-90 transition-opacity"
               >
-                Add To Cart
+                Savatga qo'shish
               </button>
               <button 
                 onClick={() => toggleWishlist(product.id)}
@@ -364,18 +364,18 @@ export const ProductDetails = () => {
                 }`}
               >
                 <Heart className={`w-4 h-4 stroke-[1.5] ${inWishlist ? 'fill-white dark:fill-black' : ''}`} />
-                <span>{inWishlist ? 'Added to Wishlist' : 'Add To Wishlist'}</span>
+                <span>{inWishlist ? 'Sevimlilarga qo\'shildi' : 'Sevimlilarga qo\'shish'}</span>
               </button>
             </div>
 
             <div className="hidden md:flex flex-col space-y-3 pt-2 text-[10px] font-semibold text-neutral-500 dark:text-neutral-400 tracking-wider">
               <div className="flex items-center space-x-2.5">
                 <Truck className="w-4 h-4 text-neutral-400" />
-                <span>Complimentary carbon-neutral shipping on all orders.</span>
+                <span>Barcha buyurtmalar uchun bepul, atrof-muhitga zararsiz yetkazib berish.</span>
               </div>
               <div className="flex items-center space-x-2.5">
                 <ShieldCheck className="w-4 h-4 text-neutral-400" />
-                <span>14-day premium return policy.</span>
+                <span>14 kunlik premium qaytarish siyosati.</span>
               </div>
             </div>
           </div>
@@ -385,7 +385,7 @@ export const ProductDetails = () => {
         <section className="py-12 md:py-20 border-t border-neutral-100 dark:border-neutral-800 mt-16 md:mt-24">
           <div className="flex justify-between items-baseline mb-8 md:mb-12">
             <h2 className="text-xl md:text-3xl font-black uppercase text-black dark:text-white tracking-tight">
-              Complete the Look
+              To'liq ko'rinishni yarating
             </h2>
           </div>
 
@@ -409,18 +409,18 @@ export const ProductDetails = () => {
           <div className="flex justify-between items-center mb-10 md:mb-12">
             <div className="space-y-1.5">
               <h2 className="text-xl md:text-3xl font-black uppercase text-black dark:text-white tracking-tight">
-                Community Feedback
+                Mijozlar sharhlari
               </h2>
               <div className="flex items-center space-x-2">
                 <div className="flex text-black dark:text-white">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-3.5 h-3.5 fill-black dark:fill-white stroke-black dark:stroke-white" />)}
                 </div>
-                <span className="text-xs font-semibold text-neutral-550 dark:text-neutral-400 tracking-wide">4.8 / 5.0 (124 reviews)</span>
+                <span className="text-xs font-semibold text-neutral-550 dark:text-neutral-400 tracking-wide">4.8 / 5.0 (124 sharh)</span>
               </div>
             </div>
 
-            <button onClick={() => showToastMessage('Review form coming soon')} className="hidden md:block bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase px-8 py-3.5 tracking-widest hover:opacity-85">
-              Write A Review
+            <button onClick={() => showToastMessage('Sharh shakli tez orada')} className="hidden md:block bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase px-8 py-3.5 tracking-widest hover:opacity-85">
+              Sharh yozish
             </button>
           </div>
 
@@ -432,7 +432,7 @@ export const ProductDetails = () => {
                     <div className="space-y-0.5">
                       <span className="text-xs font-bold block text-neutral-850 dark:text-neutral-200">{rev.author}</span>
                       {rev.verified && (
-                        <span className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">Verified Buyer</span>
+                        <span className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest block">Tasdiqlangan xaridor</span>
                       )}
                     </div>
                     <div className="flex text-black dark:text-white">
@@ -458,7 +458,7 @@ export const ProductDetails = () => {
               <div key={idx} className="space-y-3 border-b border-neutral-100 dark:border-neutral-850 pb-5">
                 <div className="flex justify-between items-baseline">
                   <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">{rev.author}</span>
-                  <span className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Verified Buyer</span>
+                  <span className="text-[8px] font-bold text-neutral-400 dark:text-neutral-500 uppercase tracking-widest">Tasdiqlangan xaridor</span>
                 </div>
                 <div className="flex text-black dark:text-white">
                   {[...Array(5)].map((_, i) => <Star key={i} className="w-2.5 h-2.5 fill-black dark:fill-white stroke-black dark:stroke-white" />)}
@@ -469,8 +469,8 @@ export const ProductDetails = () => {
               </div>
             ))}
             
-            <button onClick={() => showToastMessage('All reviews coming soon')} className="w-full border border-neutral-200 dark:border-neutral-850 py-3.5 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:text-neutral-200 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-neutral-800">
-              Read All Reviews
+            <button onClick={() => showToastMessage('Barcha sharhlar tez orada')} className="w-full border border-neutral-200 dark:border-neutral-850 py-3.5 text-xs font-bold uppercase tracking-widest text-neutral-800 dark:text-neutral-200 hover:border-neutral-400 dark:hover:border-neutral-600 bg-white dark:bg-neutral-800">
+              Barcha sharhlarni ko'rish
             </button>
           </div>
         </section>

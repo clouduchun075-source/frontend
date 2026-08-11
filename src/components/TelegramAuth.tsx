@@ -34,7 +34,7 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
       body: JSON.stringify(body),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+    if (!res.ok) throw new Error(data.error || 'Nimadir xato ketdi');
     return data;
   };
 
@@ -42,11 +42,11 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
     e.preventDefault();
     setError('');
     if (mode === 'signup' && !fullName.trim()) {
-      setError('Please enter your full name');
+      setError('Iltimos, to\'liq ismingizni kiriting');
       return;
     }
     if (!phone.trim()) {
-      setError('Please enter your phone number');
+      setError('Iltimos, telefon raqamingizni kiriting');
       return;
     }
     setLoading(true);
@@ -122,8 +122,8 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
                 <Phone className="w-4 h-4 text-black dark:text-white stroke-[1.75]" />
               </div>
               <div className="space-y-0.5 pt-0.5">
-                <p className="text-xs font-bold text-black dark:text-white">Enter your phone number</p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">We'll use it to find your Telegram account.</p>
+                <p className="text-xs font-bold text-black dark:text-white">Telefon raqamingizni kiriting</p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">Uni Telegram hisobingizni topish uchun ishlatamiz.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-3.5">
@@ -131,8 +131,8 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
                 <Send className="w-4 h-4 text-[#229ED9] stroke-[1.75] rotate-45 -translate-x-0.5" />
               </div>
               <div className="space-y-0.5 pt-0.5">
-                <p className="text-xs font-bold text-black dark:text-white">Open our Telegram bot</p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">Tap <span className="font-bold">Start</span> — it opens automatically, one tap.</p>
+                <p className="text-xs font-bold text-black dark:text-white">Telegram botimizni oching</p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug"><span className="font-bold">Start</span> tugmasini bosing — u avtomatik ochiladi, bir bosish yetarli.</p>
               </div>
             </div>
             <div className="flex items-start gap-3 border border-neutral-200 dark:border-neutral-800 rounded-2xl p-3.5">
@@ -140,8 +140,8 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
                 <ShieldCheck className="w-4 h-4 text-green-600 dark:text-green-400 stroke-[1.75]" />
               </div>
               <div className="space-y-0.5 pt-0.5">
-                <p className="text-xs font-bold text-black dark:text-white">Enter the code you receive</p>
-                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">The bot sends it straight to your Telegram chat — only you get it.</p>
+                <p className="text-xs font-bold text-black dark:text-white">Kelgan kodni kiriting</p>
+                <p className="text-[11px] text-neutral-500 dark:text-neutral-400 leading-snug">Bot uni to'g'ridan-to'g'ri Telegram chatingizga yuboradi — faqat siz olasiz.</p>
               </div>
             </div>
           </div>
@@ -149,7 +149,7 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
             onClick={() => setStep('phone')}
             className="w-full flex items-center justify-center gap-2 bg-[#229ED9] text-white rounded-full text-sm font-bold py-3.5 hover:opacity-90 transition-opacity"
           >
-            Next
+            Keyingisi
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -163,7 +163,7 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
             {mode === 'signup' && (
               <input
                 type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                placeholder="Full name"
+                placeholder="To'liq ism"
                 className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm px-5 py-3.5 focus:outline-none focus:border-black dark:focus:border-white text-black dark:text-white"
               />
             )}
@@ -181,7 +181,7 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
                 className="flex-1 flex items-center justify-center gap-2 bg-[#229ED9] text-white rounded-full text-sm font-bold py-3.5 hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 <Send className="w-4 h-4 stroke-[2] rotate-45 -translate-x-0.5" />
-                {loading ? 'Please wait...' : 'Get Code'}
+                {loading ? 'Iltimos, kuting...' : 'Kod olish'}
               </button>
             </div>
           </form>
@@ -198,18 +198,18 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
             </div>
             {sentDirectly ? (
               <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed px-2">
-                We already know your Telegram — your code was sent straight to your chat with <span className="font-bold text-black dark:text-white">@{BOT_USERNAME}</span>. Check Telegram and enter it below.
+                Biz Telegramingizni allaqachon bilamiz — kodingiz to'g'ridan-to'g'ri <span className="font-bold text-black dark:text-white">@{BOT_USERNAME}</span> bilan chatingizga yuborildi. Telegramni tekshiring va uni pastda kiriting.
               </p>
             ) : (
               <>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed px-2">
-                  We opened <span className="font-bold text-black dark:text-white">@{BOT_USERNAME}</span> in Telegram. Press <span className="font-bold text-black dark:text-white">Start</span>, then tap <span className="font-bold text-black dark:text-white">Share My Phone Number</span> when asked — your code will appear right after.
+                  Telegramda <span className="font-bold text-black dark:text-white">@{BOT_USERNAME}</span>ni ochdik. <span className="font-bold text-black dark:text-white">Start</span> tugmasini bosing, so'ng so'ralganda <span className="font-bold text-black dark:text-white">Telefon raqamni ulashish</span>ni bosing — kodingiz shundan keyin darhol chiqadi.
                 </p>
                 <a
                   href={botLink} target="_blank" rel="noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-[#229ED9] hover:underline"
                 >
-                  Open Telegram bot again
+                  Telegram botni qayta ochish
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </>
@@ -229,7 +229,7 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
               className="w-full flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold py-3.5 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               <ShieldCheck className="w-4 h-4" />
-              {loading ? 'Verifying...' : codeStatus === 'success' ? 'Verified!' : 'Verify & Continue'}
+              {loading ? 'Tekshirilmoqda...' : codeStatus === 'success' ? 'Tasdiqlandi!' : 'Tasdiqlash va davom etish'}
             </button>
           </div>
           <button
@@ -237,7 +237,7 @@ export const TelegramAuth = ({ mode, onSuccess }: Props) => {
             onClick={() => { setStep('phone'); setCode(''); setError(''); setCodeStatus('idle'); }}
             className="w-full text-center text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-black dark:hover:text-white"
           >
-            Change phone number
+            Telefon raqamni o'zgartirish
           </button>
         </div>
       )}

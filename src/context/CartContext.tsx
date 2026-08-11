@@ -169,7 +169,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Localization and Currency States (shared across accounts on this device)
   const [lang, setLang] = useState<'EN' | 'RU' | 'UZ'>(() =>
-    loadFromStorage<'EN' | 'RU' | 'UZ'>('sayway_lang', 'EN')
+    loadFromStorage<'EN' | 'RU' | 'UZ'>('sayway_lang', 'UZ')
   );
   const [currency, setCurrency] = useState<'USD' | 'UZS'>(() =>
     loadFromStorage<'USD' | 'UZS'>('sayway_currency', 'USD')

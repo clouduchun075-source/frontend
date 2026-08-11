@@ -14,6 +14,9 @@ export const Search = () => {
   }, []);
 
   const categories = ['All', 'Outerwear', 'Knitwear', 'Accessories'];
+  const categoryLabels: Record<string, string> = {
+    All: 'Barchasi', Outerwear: 'Ustki kiyim', Knitwear: 'To\'qima', Accessories: 'Aksessuarlar',
+  };
 
   const filteredProducts = useMemo(() => {
     let results = allProducts;
@@ -33,7 +36,7 @@ export const Search = () => {
     return results;
   }, [query, selectedCategory, allProducts]);
 
-  const trendingSearches = ['Hoodie', 'Coat', 'Leather', 'Knitwear', 'Oversize'];
+  const trendingSearches = ['Hoodie', 'Palto', 'Charm', 'To\'qima', 'Oversize'];
 
   return (
     <div className="min-h-screen bg-white dark:bg-neutral-900 text-black dark:text-white pb-20 md:pb-12 transition-colors duration-300">
@@ -44,7 +47,7 @@ export const Search = () => {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search collections, products..."
+              placeholder="Kolleksiyalar, mahsulotlarni qidirish..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoFocus
@@ -73,7 +76,7 @@ export const Search = () => {
                   : 'bg-white border-neutral-200 dark:bg-neutral-800 dark:border-neutral-750 text-neutral-600 dark:text-neutral-400 hover:border-neutral-400 dark:hover:border-neutral-600'
               }`}
             >
-              {cat}
+              {categoryLabels[cat] || cat}
             </button>
           ))}
         </div>
@@ -90,7 +93,7 @@ export const Search = () => {
                   : 'bg-neutral-50 dark:bg-neutral-800 border-neutral-150 dark:border-neutral-750 text-neutral-700 dark:text-neutral-300'
               }`}
             >
-              {cat}
+              {categoryLabels[cat] || cat}
             </button>
           ))}
         </div>
@@ -99,7 +102,7 @@ export const Search = () => {
         {!query && (
           <div className="mb-8">
             <h3 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 mb-4">
-              Trending Searches
+              Trend qidiruvlar
             </h3>
             <div className="flex flex-wrap gap-2">
               {trendingSearches.map((term) => (
@@ -118,10 +121,10 @@ export const Search = () => {
         {/* Results header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-sm md:text-base font-black uppercase tracking-wider text-black dark:text-white">
-            {query ? `Results for "${query}"` : 'All Products'}
+            {query ? `"${query}" uchun natijalar` : 'Barcha mahsulotlar'}
           </h2>
           <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest uppercase">
-            {filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'}
+            {filteredProducts.length} ta mahsulot
           </span>
         </div>
 
@@ -138,14 +141,14 @@ export const Search = () => {
               <SearchIcon className="w-6 h-6 text-neutral-400 dark:text-neutral-500" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-sm font-bold uppercase tracking-widest text-black dark:text-white">No results found</h3>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Try a different search term or category.</p>
+              <h3 className="text-sm font-bold uppercase tracking-widest text-black dark:text-white">Natijalar topilmadi</h3>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Boshqa qidiruv so'zi yoki kategoriyani sinab ko'ring.</p>
             </div>
             <button
               onClick={() => { setQuery(''); setSelectedCategory('All'); }}
               className="bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90 transition-colors"
             >
-              Clear Search
+              Qidiruvni tozalash
             </button>
           </div>
         )}

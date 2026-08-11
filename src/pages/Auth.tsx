@@ -56,14 +56,14 @@ export const Auth = () => {
 
     if (mode === 'signup') {
       if (!fullName.trim()) {
-        setError('Please enter your full name');
+        setError('Iltimos, to\'liq ismingizni kiriting');
         setLoading(false);
         return;
       }
       const { error: err } = await signUp(email, password, fullName);
       setLoading(false);
       if (err) { setError(err); return; }
-      setInfo('Account created! You can sign in now.');
+      setInfo('Hisob yaratildi! Endi tizimga kirishingiz mumkin.');
       setMode('login');
       return;
     }
@@ -79,12 +79,12 @@ export const Auth = () => {
       <div className="w-full max-w-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-3xl p-8 space-y-6 shadow-sm">
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-black tracking-tight text-black dark:text-white">
-            {mode === 'login' ? 'Welcome back' : 'Create your account'}
+            {mode === 'login' ? 'Xush kelibsiz' : 'Hisob yarating'}
           </h1>
           <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
             {mode === 'login'
-              ? 'Sign in to view your orders, wishlist and account.'
-              : 'Sign up to start saving your orders and wishlist.'}
+              ? 'Buyurtmalaringiz, sevimlilar va hisobingizni ko\'rish uchun tizimga kiring.'
+              : 'Buyurtmalaringiz va sevimlilarni saqlash uchun ro\'yxatdan o\'ting.'}
           </p>
         </div>
 
@@ -97,14 +97,14 @@ export const Auth = () => {
           className="w-full flex items-center justify-center gap-3 border border-neutral-300 dark:border-neutral-700 rounded-full py-3.5 text-sm font-semibold text-black dark:text-white hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50"
         >
           <GoogleIcon />
-          Continue with Google
+          Google orqali davom etish
         </button>
 
         <TelegramAuth mode={mode} onSuccess={() => navigate(from)} />
 
         <div className="flex items-center gap-3">
           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Or</span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Yoki</span>
           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
         </div>
 
@@ -113,20 +113,20 @@ export const Auth = () => {
             onClick={() => setShowEmailForm(true)}
             className="w-full text-center text-xs font-bold text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white underline underline-offset-2"
           >
-            {mode === 'login' ? 'Sign in with email instead' : 'Sign up with email instead'}
+            {mode === 'login' ? 'Email orqali kirish' : 'Email orqali ro\'yxatdan o\'tish'}
           </button>
         ) : step === 'email' ? (
           <form onSubmit={handleContinue} className="space-y-3">
             <input
               type="email" value={email} onChange={e => setEmail(e.target.value)} required
-              placeholder="Email address"
+              placeholder="Email manzil"
               className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm px-5 py-3.5 focus:outline-none focus:border-black dark:focus:border-white text-black dark:text-white"
             />
             <button
               type="submit"
               className="w-full bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold py-3.5 hover:opacity-90 transition-opacity"
             >
-              Continue
+              Davom etish
             </button>
           </form>
         ) : (
@@ -134,37 +134,37 @@ export const Auth = () => {
             <div className="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
               <span>{email}</span>
               <button type="button" onClick={() => setStep('email')} className="font-bold text-black dark:text-white hover:underline">
-                Edit
+                Tahrirlash
               </button>
             </div>
             {mode === 'signup' && (
               <input
                 type="text" value={fullName} onChange={e => setFullName(e.target.value)}
-                placeholder="Full name"
+                placeholder="To'liq ism"
                 className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm px-5 py-3.5 focus:outline-none focus:border-black dark:focus:border-white text-black dark:text-white"
               />
             )}
             <input
               type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6}
-              placeholder="Password"
+              placeholder="Parol"
               className="w-full bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full text-sm px-5 py-3.5 focus:outline-none focus:border-black dark:focus:border-white text-black dark:text-white"
             />
             <button
               type="submit" disabled={loading}
               className="w-full bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold py-3.5 hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {loading ? 'Please wait...' : mode === 'login' ? 'Sign In' : 'Create Account'}
+              {loading ? 'Iltimos, kuting...' : mode === 'login' ? 'Kirish' : 'Hisob yaratish'}
             </button>
           </form>
         )}
 
         <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
-          {mode === 'login' ? "Don't have an account? " : 'Already have an account? '}
+          {mode === 'login' ? "Hisobingiz yo'qmi? " : 'Hisobingiz bormi? '}
           <button
             onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); setInfo(''); setStep('email'); setShowEmailForm(false); }}
             className="font-bold text-black dark:text-white hover:underline"
           >
-            {mode === 'login' ? 'Sign up' : 'Sign in'}
+            {mode === 'login' ? 'Ro\'yxatdan o\'tish' : 'Kirish'}
           </button>
         </p>
 
@@ -173,7 +173,7 @@ export const Auth = () => {
             onClick={() => navigate(-1)}
             className="text-xs font-bold text-neutral-400 dark:text-neutral-500 hover:text-black dark:hover:text-white underline underline-offset-2"
           >
-            Stay logged out
+            Kirmasdan davom etish
           </button>
         </p>
       </div>

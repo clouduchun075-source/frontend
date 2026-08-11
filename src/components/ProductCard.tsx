@@ -117,7 +117,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, variant = 'gr
         <button
           onClick={handleWishlistClick}
           className="absolute top-3 right-3 z-20 p-1.5 bg-white/70 dark:bg-black/60 backdrop-blur-sm rounded-full text-black dark:text-white hover:scale-105 active:scale-95 transition-all focus:outline-none border border-white/20"
-          aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+          aria-label={isWishlisted ? "Sevimlilardan olib tashlash" : "Sevimlilarga qo'shish"}
         >
           <Heart 
             className={`w-3.5 h-3.5 stroke-[1.5] transition-colors ${

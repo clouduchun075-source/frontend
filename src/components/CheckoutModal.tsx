@@ -18,8 +18,8 @@ const emptyForm: ShippingAddress = {
 };
 
 const UZ_CITIES = [
-  'Tashkent', 'Samarkand', 'Bukhara', 'Andijan', 'Namangan', 'Fergana',
-  'Nukus', 'Qarshi', 'Termez', 'Jizzakh', 'Navoiy', 'Urgench', 'Gulistan',
+  'Toshkent', 'Samarqand', 'Buxoro', 'Andijon', 'Namangan', 'Farg\'ona',
+  'Nukus', 'Qarshi', 'Termiz', 'Jizzax', 'Navoiy', 'Urganch', 'Guliston',
 ];
 
 export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) => {
@@ -48,7 +48,7 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
     e.preventDefault();
     const missing = required.find((k) => !form[k]?.trim());
     if (missing) {
-      setError('Please fill in all required fields');
+      setError('Iltimos, barcha majburiy maydonlarni to\'ldiring');
       return;
     }
     setError('');
@@ -59,7 +59,7 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
   const handleUseSaved = () => {
     const addr = savedAddresses.find((a) => a.id === selectedId);
     if (!addr) {
-      setError('Please select an address');
+      setError('Iltimos, manzilni tanlang');
       return;
     }
     onSubmit({
@@ -95,19 +95,19 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
         <div className="flex justify-between items-center mb-1">
           <div className="flex items-center gap-2">
             <MapPin className="w-4 h-4 text-black dark:text-white" />
-            <h2 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Delivery Details</h2>
+            <h2 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Yetkazib berish ma'lumotlari</h2>
           </div>
           <button onClick={onClose} className="p-1 text-neutral-400 hover:text-black dark:hover:text-white">
             <X className="w-5 h-5" />
           </button>
         </div>
         <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mb-5">
-          A team member will call you to confirm your order after you submit.
+          Yuborganingizdan so'ng jamoamiz vakili buyurtmangizni tasdiqlash uchun sizga qo'ng'iroq qiladi.
         </p>
 
         {error && <div className="text-xs font-bold text-red-600 bg-red-50 dark:bg-red-950/30 p-3 rounded-xl tracking-wide mb-4">{error}</div>}
 
-        {loadingSaved && <p className="text-xs text-neutral-400 text-center py-6">Loading...</p>}
+        {loadingSaved && <p className="text-xs text-neutral-400 text-center py-6">Yuklanmoqda...</p>}
 
         {!loadingSaved && step === 'choose' && (
           <div className="space-y-3">
@@ -140,7 +140,7 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
                         onClick={(e) => { e.stopPropagation(); handleDeleteSaved(addr.id); }}
                         className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 hover:text-red-600"
                       >
-                        Remove
+                        O'chirish
                       </button>
                     </div>
                   </div>
@@ -154,7 +154,7 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
               className="w-full flex items-center justify-center gap-2 border border-dashed border-neutral-300 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 rounded-2xl text-xs font-bold uppercase tracking-widest py-3.5 hover:border-black dark:hover:border-white hover:text-black dark:hover:text-white transition-colors"
             >
               <Plus className="w-4 h-4" />
-              Add New Address
+              Yangi manzil qo'shish
             </button>
 
             <button
@@ -163,7 +163,7 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
               disabled={submitting || !selectedId}
               className="w-full bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold py-4 hover:opacity-90 transition-opacity disabled:opacity-50 mt-2"
             >
-              {submitting ? 'Placing Order...' : `Deliver Here — ${total}`}
+              {submitting ? 'Buyurtma qabul qilinmoqda...' : `Shu yerga yetkazish — ${total}`}
             </button>
           </div>
         )}
@@ -176,53 +176,53 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
                 onClick={() => { setStep('choose'); setError(''); }}
                 className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 hover:text-black dark:hover:text-white"
               >
-                &larr; Use a saved address instead
+                &larr; Saqlangan manzildan foydalanish
               </button>
             )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>First Name *</label>
-                <input value={form.first_name} onChange={e => set('first_name', e.target.value)} className={inputClass} placeholder="First Name" />
+                <label className={labelClass}>Ism *</label>
+                <input value={form.first_name} onChange={e => set('first_name', e.target.value)} className={inputClass} placeholder="Ism" />
               </div>
               <div>
-                <label className={labelClass}>Last Name</label>
-                <input value={form.last_name} onChange={e => set('last_name', e.target.value)} className={inputClass} placeholder="Last Name" />
+                <label className={labelClass}>Familiya</label>
+                <input value={form.last_name} onChange={e => set('last_name', e.target.value)} className={inputClass} placeholder="Familiya" />
               </div>
             </div>
 
             <div>
-              <label className={labelClass}>Contact Phone *</label>
+              <label className={labelClass}>Aloqa telefoni *</label>
               <PhoneInput value={form.phone} onChange={(v) => set('phone', v)} />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>City *</label>
+                <label className={labelClass}>Shahar *</label>
                 <select value={form.city} onChange={e => set('city', e.target.value)} className={inputClass}>
-                  <option value="">Select city</option>
+                  <option value="">Shaharni tanlang</option>
                   {UZ_CITIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className={labelClass}>District (Tuman) *</label>
-                <input value={form.district} onChange={e => set('district', e.target.value)} className={inputClass} placeholder="District" />
+                <label className={labelClass}>Tuman *</label>
+                <input value={form.district} onChange={e => set('district', e.target.value)} className={inputClass} placeholder="Tuman" />
               </div>
             </div>
 
             <div>
-              <label className={labelClass}>Neighborhood (Mahalla) *</label>
-              <input value={form.neighborhood} onChange={e => set('neighborhood', e.target.value)} className={inputClass} placeholder="Neighborhood" />
+              <label className={labelClass}>Mahalla *</label>
+              <input value={form.neighborhood} onChange={e => set('neighborhood', e.target.value)} className={inputClass} placeholder="Mahalla" />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelClass}>House / Street *</label>
-                <input value={form.house_number} onChange={e => set('house_number', e.target.value)} className={inputClass} placeholder="House / Street" />
+                <label className={labelClass}>Uy / Ko'cha *</label>
+                <input value={form.house_number} onChange={e => set('house_number', e.target.value)} className={inputClass} placeholder="Uy / Ko'cha" />
               </div>
               <div>
-                <label className={labelClass}>Postal Code</label>
-                <input value={form.postal_code} onChange={e => set('postal_code', e.target.value)} className={inputClass} placeholder="Optional" />
+                <label className={labelClass}>Pochta indeksi</label>
+                <input value={form.postal_code} onChange={e => set('postal_code', e.target.value)} className={inputClass} placeholder="Ixtiyoriy" />
               </div>
             </div>
 
@@ -230,7 +230,7 @@ export const CheckoutModal = ({ total, onClose, onSubmit, submitting }: Props) =
               type="submit" disabled={submitting}
               className="w-full bg-black dark:bg-white text-white dark:text-black rounded-full text-sm font-bold py-4 hover:opacity-90 transition-opacity disabled:opacity-50 mt-2"
             >
-              {submitting ? 'Placing Order...' : `Place Order — ${total}`}
+              {submitting ? 'Buyurtma qabul qilinmoqda...' : `Buyurtma berish — ${total}`}
             </button>
           </form>
         )}

@@ -31,6 +31,15 @@ const orderRemainingMs = (order: Order) => {
   return ORDER_CANCEL_WINDOW_MS - (Date.now() - placedAt);
 };
 
+const STATUS_LABELS: Record<Order['status'], string> = {
+  SHIPPED: 'YUBORILDI',
+  PROCESSING: 'QAYTA ISHLANMOQDA',
+  PENDING: 'KUTILMOQDA',
+  CANCELLED: 'BEKOR QILINDI',
+  DELIVERED: 'YETKAZILDI',
+};
+const statusLabel = (status: Order['status']) => STATUS_LABELS[status] || status;
+
 export const Profile = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,7 +93,7 @@ export const Profile = () => {
   }, [location]);
 
   const userInfo = {
-    name: (user?.user_metadata?.full_name as string) || user?.email?.split('@')[0] || 'Guest',
+    name: (user?.user_metadata?.full_name as string) || user?.email?.split('@')[0] || 'Mehmon',
     email: user?.email || '',
     phone: user?.phone ? `+${user.phone}` : '',
     avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
@@ -107,11 +116,11 @@ export const Profile = () => {
   }, [user?.id, userInfo.name, userInfo.email]);
 
   const menuItems = [
-    { id: 'overview' as const, label: 'Overview', icon: User },
-    { id: 'orders' as const, label: 'My Orders', icon: Package },
-    { id: 'wishlist' as const, label: 'Wishlist', icon: Heart },
-    { id: 'locations' as const, label: 'Locations', icon: MapPin },
-    { id: 'settings' as const, label: 'Settings', icon: Settings },
+    { id: 'overview' as const, label: 'Umumiy', icon: User },
+    { id: 'orders' as const, label: 'Buyurtmalarim', icon: Package },
+    { id: 'wishlist' as const, label: 'Sevimlilar', icon: Heart },
+    { id: 'locations' as const, label: 'Manzillar', icon: MapPin },
+    { id: 'settings' as const, label: 'Sozlamalar', icon: Settings },
   ];
 
   const [allProductsList, setAllProductsList] = useState<Product[]>([]);
@@ -153,7 +162,7 @@ export const Profile = () => {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-white dark:bg-neutral-900 flex items-center justify-center transition-colors">
-        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 animate-pulse">Loading...</div>
+        <div className="text-xs font-bold uppercase tracking-widest text-neutral-400 animate-pulse">Yuklanmoqda...</div>
       </div>
     );
   }
@@ -164,15 +173,15 @@ export const Profile = () => {
         <div className="w-full max-w-sm text-center space-y-6">
           <User className="w-10 h-10 text-neutral-300 dark:text-neutral-600 mx-auto" />
           <div className="space-y-2">
-            <h1 className="text-lg font-black uppercase tracking-tight text-black dark:text-white">Sign In Required</h1>
-            <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Sign in or create an account to view your profile, orders and wishlist.</p>
+            <h1 className="text-lg font-black uppercase tracking-tight text-black dark:text-white">Tizimga kirish talab qilinadi</h1>
+            <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">Profilingiz, buyurtmalaringiz va sevimlilarni ko'rish uchun tizimga kiring yoki hisob yarating.</p>
           </div>
           <div className="flex flex-col gap-3">
             <Link to="/login" className="bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-3.5 tracking-widest hover:opacity-90">
-              Sign In
+              Kirish
             </Link>
             <Link to="/signup" className="border border-neutral-200 dark:border-neutral-750 text-black dark:text-white text-xs font-bold uppercase py-3.5 tracking-widest hover:border-neutral-400">
-              Create Account
+              Hisob yaratish
             </Link>
           </div>
         </div>
@@ -186,7 +195,7 @@ export const Profile = () => {
 
         {showSaveToast && (
           <div className="fixed top-20 right-4 md:right-8 z-50 bg-black dark:bg-white text-white dark:text-black text-xs font-bold uppercase py-4 px-6 tracking-widest flex items-center space-x-3 shadow-2xl animate-slide-in">
-            <span>Changes saved successfully</span>
+            <span>O'zgarishlar muvaffaqiyatli saqlandi</span>
           </div>
         )}
 
@@ -194,14 +203,14 @@ export const Profile = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowSignOutConfirm(false)} />
             <div className="relative bg-white dark:bg-neutral-950 p-6 md:p-8 max-w-sm w-full mx-4 shadow-2xl z-10 text-center border border-neutral-100 dark:border-neutral-805 space-y-4">
-              <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Sign Out?</h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Are you sure you want to sign out of your account?</p>
+              <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Chiqmoqchimisiz?</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">Hisobingizdan chiqishga aminmisiz?</p>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowSignOutConfirm(false)} className="flex-1 border border-neutral-200 dark:border-neutral-750 py-3 text-xs font-bold uppercase tracking-widest text-black dark:text-white hover:border-neutral-400 dark:hover:border-neutral-550 transition-colors">
-                  Cancel
+                  Bekor qilish
                 </button>
                 <button onClick={async () => { setShowSignOutConfirm(false); await signOut(); navigate('/'); }} className="flex-1 bg-black dark:bg-white text-white dark:text-black py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors">
-                  Sign Out
+                  Chiqish
                 </button>
               </div>
             </div>
@@ -215,14 +224,14 @@ export const Profile = () => {
               <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/20 flex items-center justify-center mx-auto">
                 <span className="text-red-600 text-xl font-bold">!</span>
               </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-red-650 dark:text-red-400">Delete Account?</h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">This action is permanent and cannot be undone. All your data, orders, and history will be deleted.</p>
+              <h3 className="text-sm font-black uppercase tracking-widest text-red-650 dark:text-red-400">Hisobni o'chirasizmi?</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">Bu amal qaytarilmaydi. Barcha ma'lumotlaringiz, buyurtmalaringiz va tarixingiz o'chiriladi.</p>
               <div className="flex gap-3 pt-2">
                 <button onClick={() => setShowDeleteConfirm(false)} className="flex-1 border border-neutral-200 dark:border-neutral-750 py-3 text-xs font-bold uppercase tracking-widest text-black dark:text-white hover:border-neutral-400 dark:hover:border-neutral-550 transition-colors">
-                  Cancel
+                  Bekor qilish
                 </button>
                 <button onClick={() => { setShowDeleteConfirm(false); navigate('/'); }} className="flex-1 bg-red-600 text-white py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors">
-                  Delete
+                  O'chirish
                 </button>
               </div>
             </div>
@@ -236,21 +245,21 @@ export const Profile = () => {
               <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/20 flex items-center justify-center mx-auto">
                 <XCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
               </div>
-              <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Cancel this order?</h3>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{confirmCancelId} will be cancelled. This can't be undone.</p>
+              <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Buyurtmani bekor qilasizmi?</h3>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium">{confirmCancelId} bekor qilinadi. Bu amalni qaytarib bo'lmaydi.</p>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setConfirmCancelId(null)}
                   className="flex-1 border border-neutral-200 dark:border-neutral-750 py-3 text-xs font-bold uppercase tracking-widest text-black dark:text-white hover:border-neutral-400 dark:hover:border-neutral-550 transition-colors"
                 >
-                  No
+                  Yo'q
                 </button>
                 <button
                   onClick={() => handleCancelOrder(confirmCancelId)}
                   disabled={cancellingId === confirmCancelId}
                   className="flex-1 bg-red-600 text-white py-3 text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-colors disabled:opacity-50"
                 >
-                  {cancellingId === confirmCancelId ? 'Cancelling...' : 'Yes, Cancel'}
+                  {cancellingId === confirmCancelId ? 'Bekor qilinmoqda...' : 'Ha, bekor qilish'}
                 </button>
               </div>
             </div>
@@ -273,19 +282,19 @@ export const Profile = () => {
 
               <div className="p-5 space-y-5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Status</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Holati</span>
                   <span className={`text-[8px] font-black uppercase tracking-widest px-3 py-1 rounded-full ${
                     viewOrder.status === 'SHIPPED' || viewOrder.status === 'DELIVERED' ? 'bg-green-50 dark:bg-green-950/20 text-green-700 dark:text-green-455' :
                     viewOrder.status === 'PROCESSING' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-455' :
                     viewOrder.status === 'PENDING' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400' :
                     'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
                   }`}>
-                    {viewOrder.status}
+                    {statusLabel(viewOrder.status)}
                   </span>
                 </div>
 
                 <div className="space-y-3">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Items</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Mahsulotlar</span>
                   {(viewOrder.items ?? []).map((item, idx) => (
                     <div key={idx} className="flex items-center gap-3 border border-neutral-100 dark:border-neutral-800 p-3">
                       {item.image && (
@@ -296,7 +305,7 @@ export const Profile = () => {
                       <div className="flex-1 min-w-0 space-y-0.5">
                         <p className="text-xs font-bold text-black dark:text-white truncate">{item.name}</p>
                         <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">
-                          {[item.size, item.color].filter(Boolean).join(' · ')}{(item.size || item.color) ? ' · ' : ''}Qty {item.quantity}
+                          {[item.size, item.color].filter(Boolean).join(' · ')}{(item.size || item.color) ? ' · ' : ''}Soni: {item.quantity}
                         </p>
                       </div>
                       <span className="text-xs font-black text-black dark:text-white flex-shrink-0">{formatPrice(item.price * item.quantity)}</span>
@@ -305,14 +314,14 @@ export const Profile = () => {
                 </div>
 
                 <div className="flex items-center justify-between border-t border-neutral-100 dark:border-neutral-800 pt-4">
-                  <span className="text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Total</span>
+                  <span className="text-xs font-bold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">Jami</span>
                   <span className="text-sm font-black text-black dark:text-white">{formatPrice(viewOrder.amount)}</span>
                 </div>
 
                 {isOrderCancellable(viewOrder) && (
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest uppercase">
                     <Clock className="w-3.5 h-3.5" />
-                    Free cancellation ends in {formatCountdown(orderRemainingMs(viewOrder))}
+                    Bepul bekor qilish {formatCountdown(orderRemainingMs(viewOrder))} da tugaydi
                   </div>
                 )}
 
@@ -323,7 +332,7 @@ export const Profile = () => {
                     className="flex-1 flex items-center justify-center gap-2 border border-red-300 dark:border-red-900/50 text-red-650 dark:text-red-400 text-[10px] font-bold uppercase px-5 py-3 tracking-widest hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <XCircle className="w-3.5 h-3.5" />
-                    {cancellingId === viewOrder.orderId ? 'Cancelling...' : viewOrder.status === 'CANCELLED' ? 'Order Cancelled' : 'Cancel Order'}
+                    {cancellingId === viewOrder.orderId ? 'Bekor qilinmoqda...' : viewOrder.status === 'CANCELLED' ? 'Buyurtma bekor qilindi' : 'Buyurtmani bekor qilish'}
                   </button>
                   <a
                     href={OPERATOR_TELEGRAM_URL}
@@ -332,7 +341,7 @@ export const Profile = () => {
                     className="flex-1 flex items-center justify-center gap-2 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-5 py-3 tracking-widest hover:opacity-90 transition-colors"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
-                    Contact Operator
+                    Operator bilan bog'lanish
                   </a>
                 </div>
               </div>
@@ -399,7 +408,7 @@ export const Profile = () => {
                 className="w-full flex items-center space-x-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all mt-2 border-t border-neutral-100 dark:border-neutral-850 pt-4 focus:outline-none"
               >
                 <LogOut className="w-4 h-4 stroke-[1.5]" />
-                <span>Sign Out</span>
+                <span>Chiqish</span>
               </button>
             </div>
           </div>
@@ -435,27 +444,27 @@ export const Profile = () => {
             {activeSection === 'overview' && (
               <div className="space-y-6">
                 <h3 className="text-sm font-black uppercase tracking-widest border-b border-neutral-100 dark:border-neutral-800 pb-3 text-black dark:text-white">
-                  Dashboard Overview
+                  Umumiy ma'lumot
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="border border-neutral-200 dark:border-neutral-800 p-4 text-center space-y-1 bg-white dark:bg-neutral-950">
                     <span className="text-2xl font-black text-black dark:text-white">{orders.length}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Total Orders</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Jami buyurtmalar</span>
                   </div>
                   <div className="border border-neutral-200 dark:border-neutral-800 p-4 text-center space-y-1 bg-white dark:bg-neutral-950">
                     <span className="text-2xl font-black text-black dark:text-white">{cartCount}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">In Bag</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Savatda</span>
                   </div>
                   <div className="border border-neutral-200 dark:border-neutral-800 p-4 text-center space-y-1 bg-white dark:bg-neutral-950">
                     <span className="text-2xl font-black text-black dark:text-white">{wishlist.length}</span>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Wishlist</span>
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500 block">Sevimlilar</span>
                   </div>
                 </div>
 
                 {/* Recent Orders */}
                 <div className="space-y-3">
-                  <h4 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 text-left">Recent Orders</h4>
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-neutral-400 dark:text-neutral-500 text-left">So'nggi buyurtmalar</h4>
                   {orders.length > 0 ? orders.slice(0, 3).map((ord) => (
                     <div key={ord.orderId} className="border border-neutral-200 dark:border-neutral-800 p-4 flex justify-between items-center bg-white dark:bg-neutral-950 transition-colors">
                       <div className="space-y-0.5 text-left">
@@ -471,21 +480,21 @@ export const Profile = () => {
                           ord.status === 'PROCESSING' ? 'bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-455' :
                           'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400'
                         }`}>
-                          {ord.status}
+                          {statusLabel(ord.status)}
                         </span>
                       </div>
                     </div>
                   )) : (
-                    <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium py-4 text-center">No orders yet</p>
+                    <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium py-4 text-center">Hozircha buyurtmalar yo'q</p>
                   )}
                 </div>
 
                 <div className="flex gap-3">
                   <Link to="/collections" className="flex-1 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase py-3.5 tracking-widest text-center hover:opacity-90">
-                    Shop Now
+                    Xarid qilish
                   </Link>
                   <Link to="/bag" className="flex-1 border border-neutral-200 dark:border-neutral-750 text-neutral-700 dark:text-neutral-300 text-[10px] font-bold uppercase py-3.5 tracking-widest text-center hover:border-neutral-400 dark:hover:border-neutral-550">
-                    View Bag ({cartCount})
+                    Savatni ko'rish ({cartCount})
                   </Link>
                 </div>
               </div>
@@ -495,8 +504,8 @@ export const Profile = () => {
             {activeSection === 'orders' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">My Orders</h3>
-                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{orders.length} orders</span>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Buyurtmalarim</h3>
+                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{orders.length} ta buyurtma</span>
                 </div>
 
                 {orders.length > 0 ? (
@@ -518,7 +527,7 @@ export const Profile = () => {
                             )}
                             <div className="space-y-0.5 text-left">
                               <span className="text-sm font-bold text-black dark:text-white block">{ord.orderId}</span>
-                              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">{ord.timeAgo} &bull; {ord.itemsCount} {ord.itemsCount === 1 ? 'item' : 'items'}</span>
+                              <span className="text-[10px] text-neutral-400 dark:text-neutral-500 font-semibold">{ord.timeAgo} &bull; {ord.itemsCount} ta mahsulot</span>
                             </div>
                           </div>
                           <div className="flex items-center space-x-4 justify-between md:justify-end">
@@ -528,7 +537,7 @@ export const Profile = () => {
                               ord.status === 'PENDING' ? 'bg-neutral-100 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400' :
                               'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400'
                             }`}>
-                              {ord.status}
+                              {statusLabel(ord.status)}
                             </span>
                             <span className="text-sm font-black text-black dark:text-white">
                               {formatPrice(ord.amount)}
@@ -543,7 +552,7 @@ export const Profile = () => {
                           >
                             <span className="flex items-center gap-1.5 text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest uppercase">
                               <Clock className="w-3.5 h-3.5" />
-                              Cancel within {formatCountdown(orderRemainingMs(ord))}
+                              {formatCountdown(orderRemainingMs(ord))} ichida bekor qiling
                             </span>
                             <button
                               onClick={() => setConfirmCancelId(ord.orderId)}
@@ -551,7 +560,7 @@ export const Profile = () => {
                               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 disabled:opacity-50"
                             >
                               <XCircle className="w-3.5 h-3.5" />
-                              {cancellingId === ord.orderId ? 'Cancelling...' : 'Cancel Order'}
+                              {cancellingId === ord.orderId ? 'Bekor qilinmoqda...' : 'Buyurtmani bekor qilish'}
                             </button>
                           </div>
                         )}
@@ -562,9 +571,9 @@ export const Profile = () => {
                 ) : (
                   <div className="py-12 text-center space-y-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 transition-colors">
                     <Package className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">No orders yet</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Hozircha buyurtmalar yo'q</p>
                     <Link to="/collections" className="inline-block bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90">
-                      Start Shopping
+                      Xaridni boshlash
                     </Link>
                   </div>
                 )}
@@ -575,8 +584,8 @@ export const Profile = () => {
             {activeSection === 'wishlist' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">My Wishlist</h3>
-                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{wishlistProducts.length} items</span>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Sevimlilarim</h3>
+                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{wishlistProducts.length} ta mahsulot</span>
                 </div>
 
                 {wishlistProducts.length > 0 ? (
@@ -588,9 +597,9 @@ export const Profile = () => {
                 ) : (
                   <div className="py-12 text-center space-y-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 transition-colors">
                     <Heart className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Your wishlist is empty</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Sevimlilar ro'yxati bo'sh</p>
                     <Link to="/collections" className="inline-block bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90">
-                      Browse Collections
+                      Kolleksiyalarni ko'rish
                     </Link>
                   </div>
                 )}
@@ -601,8 +610,8 @@ export const Profile = () => {
             {activeSection === 'locations' && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center border-b border-neutral-100 dark:border-neutral-800 pb-3">
-                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Saved Locations</h3>
-                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{addresses.length} saved</span>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">Saqlangan manzillar</h3>
+                  <span className="text-[10px] font-bold text-neutral-400 dark:text-neutral-500 tracking-widest">{addresses.length} ta saqlangan</span>
                 </div>
 
                 {addresses.length > 0 ? (
@@ -619,7 +628,7 @@ export const Profile = () => {
                         <button
                           onClick={() => handleDeleteAddress(addr.id)}
                           className="p-1.5 text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 rounded flex-shrink-0"
-                          aria-label="Delete address"
+                          aria-label="Manzilni o'chirish"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -629,8 +638,8 @@ export const Profile = () => {
                 ) : (
                   <div className="py-12 text-center space-y-3 bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 transition-colors">
                     <MapPin className="w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto" />
-                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">No saved locations yet</p>
-                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 px-6">Addresses you enter at checkout will be saved here for next time.</p>
+                    <p className="text-xs font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Hozircha saqlangan manzillar yo'q</p>
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 px-6">To'lov paytida kiritgan manzillaringiz keyingi safar uchun shu yerda saqlanadi.</p>
                   </div>
                 )}
               </div>
@@ -640,39 +649,39 @@ export const Profile = () => {
             {activeSection === 'settings' && (
               <div className="space-y-6">
                 <h3 className="text-sm font-black uppercase tracking-widest border-b border-neutral-100 dark:border-neutral-800 pb-3 text-black dark:text-white">
-                  Account Settings
+                  Hisob sozlamalari
                 </h3>
 
                 <div className="space-y-4">
                   <div className="border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 bg-white dark:bg-neutral-950 transition-colors">
                     <div className="flex justify-between items-center">
-                      <h4 className="text-xs font-black uppercase tracking-widest text-black dark:text-white">Personal Information</h4>
+                      <h4 className="text-xs font-black uppercase tracking-widest text-black dark:text-white">Shaxsiy ma'lumotlar</h4>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-1 text-left">
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Full Name</label>
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">To'liq ism</label>
                         <input type="text" value={nameInput} onChange={(e) => setNameInput(e.target.value)} className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
                       </div>
                       <div className="space-y-1 text-left">
                         <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Email</label>
-                        <input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="Add an email address" className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
+                        <input type="email" value={emailInput} onChange={(e) => setEmailInput(e.target.value)} placeholder="Email manzil qo'shing" className="w-full border border-neutral-200 dark:border-neutral-750 bg-white dark:bg-neutral-900 text-black dark:text-white px-3 py-2.5 text-xs font-semibold focus:outline-none focus:border-black dark:focus:border-white" />
                       </div>
                       <div className="space-y-1 text-left">
-                        <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Phone</label>
-                        <input type="tel" value={userInfo.phone} disabled title="Verified via Telegram — contact support to change your number" className="w-full border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-3 py-2.5 text-xs font-semibold cursor-not-allowed" />
-                        <p className="text-[9px] text-neutral-400 dark:text-neutral-500">Verified via Telegram, can't be changed here.</p>
+                        <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">Telefon</label>
+                        <input type="tel" value={userInfo.phone} disabled title="Telegram orqali tasdiqlangan — raqamni o'zgartirish uchun qo'llab-quvvatlash xizmatiga murojaat qiling" className="w-full border border-neutral-200 dark:border-neutral-750 bg-neutral-50 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-3 py-2.5 text-xs font-semibold cursor-not-allowed" />
+                        <p className="text-[9px] text-neutral-400 dark:text-neutral-500">Telegram orqali tasdiqlangan, bu yerda o'zgartirib bo'lmaydi.</p>
                       </div>
                     </div>
                     {saveError && <p className="text-[10px] font-bold text-red-600 dark:text-red-400">{saveError}</p>}
                     <button onClick={handleSave} disabled={savingProfile} className="bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase px-6 py-3 tracking-widest hover:opacity-90 transition-colors focus:outline-none disabled:opacity-50">
-                      {savingProfile ? 'Saving...' : 'Save Changes'}
+                      {savingProfile ? 'Saqlanmoqda...' : 'O\'zgarishlarni saqlash'}
                     </button>
                   </div>
 
                   <div className="border border-neutral-200 dark:border-neutral-800 p-5 space-y-4 bg-white dark:bg-neutral-950 transition-colors">
-                    <h4 className="text-xs font-black uppercase tracking-widest text-black dark:text-white text-left">Notifications</h4>
+                    <h4 className="text-xs font-black uppercase tracking-widest text-black dark:text-white text-left">Bildirishnomalar</h4>
                     <label className="flex items-center justify-between cursor-pointer">
-                      <span className="text-xs font-semibold text-neutral-750 dark:text-neutral-300">Email notifications for orders</span>
+                      <span className="text-xs font-semibold text-neutral-750 dark:text-neutral-300">Buyurtmalar uchun email bildirishnomalari</span>
                       <div 
                         onClick={() => setEmailNotif(!emailNotif)}
                         className={`w-10 h-5 rounded-full relative transition-colors cursor-pointer ${emailNotif ? 'bg-black dark:bg-white' : 'bg-neutral-200 dark:bg-neutral-850'}`}
@@ -683,7 +692,7 @@ export const Profile = () => {
                       </div>
                     </label>
                     <label className="flex items-center justify-between cursor-pointer">
-                      <span className="text-xs font-semibold text-neutral-750 dark:text-neutral-300">Marketing emails</span>
+                      <span className="text-xs font-semibold text-neutral-750 dark:text-neutral-300">Marketing xatlari</span>
                       <div 
                         onClick={() => setMarketingEmails(!marketingEmails)}
                         className={`w-10 h-5 rounded-full relative transition-colors cursor-pointer ${marketingEmails ? 'bg-black dark:bg-white' : 'bg-neutral-200 dark:bg-neutral-850'}`}
@@ -696,13 +705,13 @@ export const Profile = () => {
                   </div>
 
                   <div className="border border-red-200 dark:border-red-950/40 p-5 bg-white dark:bg-neutral-950 transition-colors">
-                    <h4 className="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400 mb-2 text-left">Danger Zone</h4>
-                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium mb-3 text-left">Permanently delete your account and all associated data.</p>
-                    <button 
+                    <h4 className="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400 mb-2 text-left">Xavfli hudud</h4>
+                    <p className="text-[10px] text-neutral-400 dark:text-neutral-500 font-medium mb-3 text-left">Hisobingiz va unga tegishli barcha ma'lumotlarni butunlay o'chiring.</p>
+                    <button
                       onClick={() => setShowDeleteConfirm(true)}
                       className="border border-red-300 dark:border-red-900/50 text-red-650 dark:text-red-400 text-[10px] font-bold uppercase px-5 py-2.5 tracking-widest hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors focus:outline-none"
                     >
-                      Delete Account
+                      Hisobni o'chirish
                     </button>
                   </div>
                 </div>

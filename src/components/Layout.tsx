@@ -143,7 +143,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <button
             onClick={() => setIsMobileMenuOpen(true)}
             className="md:hidden p-2 -ml-2 text-black dark:text-white hover:opacity-75 transition-opacity"
-            aria-label="Open menu"
+            aria-label="Menyuni ochish"
           >
             <Menu className="w-6 h-6 stroke-[1.5]" />
           </button>
@@ -181,7 +181,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <button
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               className="p-2 text-black dark:text-white hover:opacity-70 transition-opacity focus:outline-none"
-              aria-label="Toggle theme"
+              aria-label="Rejimni almashtirish"
             >
               {theme === 'dark' ? (
                 <Sun className="w-5 h-5 stroke-[1.5]" />
@@ -194,7 +194,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <Link 
               to="/profile?tab=wishlist" 
               className="p-2 text-black dark:text-white hover:opacity-70 transition-opacity relative" 
-              aria-label="Wishlist"
+              aria-label="Sevimlilar"
             >
               <Heart className="w-5 h-5 stroke-[1.5]" />
               {wishlist.length > 0 && (
@@ -204,15 +204,15 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               )}
             </Link>
 
-            <Link to="/search" className="hidden md:flex p-2 text-black dark:text-white hover:opacity-70 transition-opacity" aria-label="Search">
+            <Link to="/search" className="hidden md:flex p-2 text-black dark:text-white hover:opacity-70 transition-opacity" aria-label="Qidiruv">
               <Search className="w-5 h-5 stroke-[1.5]" />
             </Link>
-            
-            <Link to="/profile" className="hidden md:flex p-2 text-black dark:text-white hover:opacity-70 transition-opacity" aria-label="Profile">
+
+            <Link to="/profile" className="hidden md:flex p-2 text-black dark:text-white hover:opacity-70 transition-opacity" aria-label="Profil">
               <User className="w-5 h-5 stroke-[1.5]" />
             </Link>
 
-            <Link to="/bag" className="p-2 text-black dark:text-white hover:opacity-70 transition-opacity relative" aria-label="Shopping Bag">
+            <Link to="/bag" className="p-2 text-black dark:text-white hover:opacity-70 transition-opacity relative" aria-label="Savat">
               <ShoppingBag className="w-5 h-5 stroke-[1.5]" />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[15px] h-3.5 bg-black dark:bg-white text-white dark:text-black text-[8px] font-extrabold rounded-full flex items-center justify-center px-0.5">
@@ -225,7 +225,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <div className="md:hidden w-full bg-neutral-50 dark:bg-neutral-950 border-t border-b border-neutral-100 dark:border-neutral-900 py-1.5 overflow-hidden transition-colors">
           <div className="text-[10px] tracking-[0.25em] uppercase text-neutral-500 dark:text-neutral-400 text-center font-medium animate-pulse">
-            Sayway Luxury Fashion
+            Sayway — Hashamatli moda
           </div>
         </div>
       </header>
@@ -244,7 +244,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 text-black dark:text-white hover:opacity-70"
-                aria-label="Close menu"
+                aria-label="Menyuni yopish"
               >
                 <X className="w-6 h-6 stroke-[1.5]" />
               </button>
@@ -270,7 +270,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
             <div className="mt-auto pt-6 border-t border-neutral-100 dark:border-neutral-800 space-y-4">
               <div className="text-xs text-neutral-400 dark:text-neutral-500">
-                Premium Oversized Streetwear
+                Premium keng o'lchamli streetwear
               </div>
               <div className="flex space-x-4 text-black dark:text-white">
                 <a href="#instagram" className="hover:opacity-70"><Instagram className="w-5 h-5" /></a>
@@ -292,32 +292,32 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="flex flex-col space-y-4 text-black dark:text-white">
               <span className="text-2xl font-black tracking-tight">SAYWAY</span>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">BEYOND EXPECTATIONS</p>
+              <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">KUTGANINGIZDAN YUQORI</p>
               <div className="flex items-center space-x-2 pt-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors">
                 <Send className="w-4 h-4" />
-                <a href="#telegram-bot">Telegram Bot - Coming Soon</a>
+                <a href="#telegram-bot">Telegram Bot - tez orada</a>
               </div>
             </div>
 
             <div>
-              <h4 className="text-xs font-bold tracking-wider text-black dark:text-white uppercase mb-4">Services</h4>
+              <h4 className="text-xs font-bold tracking-wider text-black dark:text-white uppercase mb-4">Xizmatlar</h4>
               <ul className="space-y-2 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                <li><a href="#shipping" className="hover:text-black dark:hover:text-white transition-colors">SHIPPING & RETURNS</a></li>
-                <li><a href="#contact" className="hover:text-black dark:hover:text-white transition-colors">CONTACT US</a></li>
-                <li><a href="#sizeguide" className="hover:text-black dark:hover:text-white transition-colors">SIZE GUIDE</a></li>
+                <li><a href="#shipping" className="hover:text-black dark:hover:text-white transition-colors">YETKAZIB BERISH VA QAYTARISH</a></li>
+                <li><a href="#contact" className="hover:text-black dark:hover:text-white transition-colors">BIZ BILAN BOG'LANISH</a></li>
+                <li><a href="#sizeguide" className="hover:text-black dark:hover:text-white transition-colors">O'LCHAM QO'LLANMASI</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-xs font-bold tracking-wider text-black dark:text-white uppercase mb-4">Legal</h4>
+              <h4 className="text-xs font-bold tracking-wider text-black dark:text-white uppercase mb-4">Huquqiy</h4>
               <ul className="space-y-2 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
-                <li><a href="#privacy" className="hover:text-black dark:hover:text-white transition-colors">PRIVACY POLICY</a></li>
-                <li><a href="#terms" className="hover:text-black dark:hover:text-white transition-colors">TERMS OF SERVICE</a></li>
+                <li><a href="#privacy" className="hover:text-black dark:hover:text-white transition-colors">MAXFIYLIK SIYOSATI</a></li>
+                <li><a href="#terms" className="hover:text-black dark:hover:text-white transition-colors">XIZMAT SHARTLARI</a></li>
               </ul>
             </div>
 
             <div>
-              <h4 className="text-xs font-bold tracking-wider text-black dark:text-white uppercase mb-4">Social</h4>
+              <h4 className="text-xs font-bold tracking-wider text-black dark:text-white uppercase mb-4">Ijtimoiy tarmoqlar</h4>
               <ul className="space-y-2 text-xs text-neutral-500 dark:text-neutral-400 font-medium">
                 <li><a href="#instagram" className="hover:text-black dark:hover:text-white transition-colors">INSTAGRAM</a></li>
                 <li><a href="#pinterest" className="hover:text-black dark:hover:text-white transition-colors">PINTEREST</a></li>
@@ -327,7 +327,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex justify-between items-center pt-8 border-t border-neutral-100 dark:border-neutral-900 text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-semibold tracking-wider">
-            <span>&copy; 2026 SAYWAY LUXURY. ALL RIGHTS RESERVED.</span>
+            <span>&copy; 2026 SAYWAY LUXURY. BARCHA HUQUQLAR HIMOYALANGAN.</span>
             <span className="cursor-pointer hover:text-black dark:hover:text-white transition-colors">
               GLOBAL | {lang === 'EN' ? 'ENGLISH' : lang === 'RU' ? 'РУССКИЙ' : 'O\'ZBEKCHA'}
             </span>
@@ -348,7 +348,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <line x1="3" y1="6" x2="21" y2="6" />
             <path d="M16 10a4 4 0 01-8 0" />
           </svg>
-          <span className="text-[9px] uppercase font-bold tracking-wider">Shop</span>
+          <span className="text-[9px] uppercase font-bold tracking-wider">Do'kon</span>
         </Link>
         
         <Link 
@@ -358,7 +358,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           }`}
         >
           <Search className="w-5 h-5 stroke-[1.5]" />
-          <span className="text-[9px] uppercase font-bold tracking-wider">Search</span>
+          <span className="text-[9px] uppercase font-bold tracking-wider">Qidiruv</span>
         </Link>
         
         <Link 
@@ -373,7 +373,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
               {cartCount > 99 ? '99+' : cartCount}
             </span>
           )}
-          <span className="text-[9px] uppercase font-bold tracking-wider">Bag</span>
+          <span className="text-[9px] uppercase font-bold tracking-wider">Savat</span>
         </Link>
         
         <Link 
@@ -383,7 +383,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           }`}
         >
           <User className="w-5 h-5 stroke-[1.5]" />
-          <span className="text-[9px] uppercase font-bold tracking-wider">Profile</span>
+          <span className="text-[9px] uppercase font-bold tracking-wider">Profil</span>
         </Link>
       </div>
     </div>
