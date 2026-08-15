@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       `Status: *${order.status}*`,
       itemsLines ? `\n${itemsLines}` : '',
       `\nTotal: *$${Number(order.total ?? 0).toLocaleString('en-US')}*`,
-      '\nThank you for shopping with SAYWAY!',
+      '\nThank you for shopping with SAYPAID!',
     ].filter(Boolean).join('\n');
 
     const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {

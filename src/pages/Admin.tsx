@@ -76,7 +76,7 @@ export const Admin = () => {
       <div className="min-h-screen bg-white flex items-center justify-center px-4">
         <div className="w-full max-w-sm space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-black uppercase tracking-tight">SAYWAY</h1>
+            <h1 className="text-3xl font-black uppercase tracking-tight">SAYPAID</h1>
             <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">Admin Panel</p>
           </div>
           <div className="space-y-4">
@@ -119,7 +119,7 @@ const AdminPanel = ({ activeTab, setActiveTab, onLogout, onBack }: {
     <div className="min-h-screen bg-neutral-50 flex">
       <aside className="hidden lg:flex w-60 bg-white border-r border-neutral-200 flex-col p-6 fixed h-screen">
         <div className="flex items-center justify-between mb-10">
-          <span className="text-xl font-black tracking-tight">SAYWAY</span>
+          <span className="text-xl font-black tracking-tight">SAYPAID</span>
           <span className="text-[8px] font-bold uppercase tracking-widest text-neutral-400 bg-neutral-100 px-2 py-1">Admin</span>
         </div>
         <nav className="flex flex-col gap-1 flex-grow">
@@ -449,7 +449,7 @@ const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; onClose: () => void; onSaved: () => void }) => {
   const [form, setForm] = useState({
     name: product?.name || '', price: String(product?.price || ''), category: product?.category || 'Outerwear',
-    brand: product?.brand || 'SAYWAY BLACK LABEL', subtitle: product?.subtitle || '', stock: String(product?.stock || 0),
+    brand: product?.brand || 'SAYPAID BLACK LABEL', subtitle: product?.subtitle || '', stock: String(product?.stock || 0),
     tag: product?.tag || '',
     description: product?.description || '', material: product?.material || '', weight: product?.weight || '',
     color: product?.color || 'black', discount: product?.discount ? String(product.discount) : '',

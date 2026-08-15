@@ -55,7 +55,7 @@ export const translations = {
     editorial_mobile_desc: "Redefining the silhouette of modern architecture through tailored garments.",
     
     // Insider / Newsletter
-    insider_title: "SAYWAY INSIDER",
+    insider_title: "SAYPAID INSIDER",
     insider_desc: "Be the first to access limited drops and private collections.",
     insider_placeholder: "ENTER YOUR EMAIL",
     subscribe: "SUBSCRIBE",
@@ -194,7 +194,7 @@ export const translations = {
     editorial_mobile_desc: "Переосмысление силуэта современной архитектуры через сшитую на заказ одежду.",
     
     // Insider / Newsletter
-    insider_title: "SAYWAY ИНСАЙДЕР",
+    insider_title: "SAYPAID ИНСАЙДЕР",
     insider_desc: "Будьте первым, кто получит доступ к лимитированным выпускам и частным коллекциям.",
     insider_placeholder: "ВВЕДИТЕ ВАШ EMAIL",
     subscribe: "ПОДПИСАТЬСЯ",
@@ -333,7 +333,7 @@ export const translations = {
     editorial_mobile_desc: "Tikilgan kiyimlar orqali zamonaviy arxitektura siluetini qayta aniqlash.",
     
     // Insider / Newsletter
-    insider_title: "SAYWAY INSIDER",
+    insider_title: "SAYPAID INSIDER",
     insider_desc: "Cheklangan to'plamlar va shaxsiy kolleksiyalarga birinchilardan bo'lib kirish huquqiga ega bo'ling.",
     insider_placeholder: "EMAIL MANZILINGIZNI KIRITING",
     subscribe: "A'ZO BO'LISH",

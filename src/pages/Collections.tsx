@@ -31,7 +31,7 @@ export const Collections = () => {
   const [priceLimit, setPriceLimit] = useState(2500);
   const [priceLimitTouched, setPriceLimitTouched] = useState(false);
   // No brand pre-selected -- previously this defaulted to only
-  // 'SAYWAY BLACK LABEL', which silently hid every 'SAYWAY CORE' product
+  // 'SAYPAID BLACK LABEL', which silently hid every 'SAYPAID CORE' product
   // the moment the page loaded and made the filters look broken.
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);

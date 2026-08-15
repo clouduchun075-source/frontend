@@ -274,7 +274,7 @@ export const Bag = () => {
                     Telegram orqali kelajakdagi to'lov
                   </h3>
                   <p className="text-xs text-neutral-500 dark:text-neutral-400 font-medium tracking-wide leading-relaxed">
-                    Xaridlaringizni bizning xavfsiz Telegram tizimimiz orqali osongina yakunlang. Ishga tushirilgandan so'ng, siz shaxsiy yordam bilan tranzaksiyalarni yakunlash uchun noyob <span className="font-bold text-black dark:text-white">**SAYWAY Buyurtma ID</span>si olasiz.
+                    Xaridlaringizni bizning xavfsiz Telegram tizimimiz orqali osongina yakunlang. Ishga tushirilgandan so'ng, siz shaxsiy yordam bilan tranzaksiyalarni yakunlash uchun noyob <span className="font-bold text-black dark:text-white">**SAYPAID Buyurtma ID</span>si olasiz.
                   </p>
                 </div>
 

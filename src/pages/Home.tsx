@@ -314,7 +314,7 @@ export const Home = () => {
 
       {/* MOBILE FOOTER */}
       <footer className="md:hidden py-12 px-6 bg-neutral-50 dark:bg-neutral-950 text-center flex flex-col items-center space-y-6 transition-colors">
-        <span className="text-xl font-black tracking-tight text-black dark:text-white">SAYWAY</span>
+        <span className="text-xl font-black tracking-tight text-black dark:text-white">SAYPAID</span>
         
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs font-medium text-neutral-500 dark:text-neutral-400">
           <a href="#privacy" className="hover:text-black dark:hover:text-white">{t('privacy_policy')}</a>
@@ -324,7 +324,7 @@ export const Home = () => {
         </div>
 
         <div className="text-[8px] text-neutral-400 dark:text-neutral-500 uppercase tracking-widest font-semibold">
-          &copy; 2026 SAYWAY LUXURY. {t('all_rights_reserved')}
+          &copy; 2026 SAYPAID LUXURY. {t('all_rights_reserved')}
         </div>
       </footer>
     </div>

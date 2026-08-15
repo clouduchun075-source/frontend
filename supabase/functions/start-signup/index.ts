@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           chat_id: link.chat_id,
           parse_mode: 'Markdown',
-          text: `Your SAYWAY sign-in code is:\n\n*${code}*\n\nEnter it in the app. It expires in 5 minutes.`,
+          text: `Your SAYPAID sign-in code is:\n\n*${code}*\n\nEnter it in the app. It expires in 5 minutes.`,
         }),
       });
 

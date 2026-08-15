@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     if (isPlainStart) {
       await sendMessage(
         chatId,
-        "Welcome to SAYWAY! Share your phone number now and you'll be able to sign in instantly on the website (or a future Telegram mini app) without coming back here.",
+        "Welcome to SAYPAID! Share your phone number now and you'll be able to sign in instantly on the website (or a future Telegram mini app) without coming back here.",
         shareContactKeyboard
       );
       return new Response('ok');
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
 
       await sendMessage(
         chatId,
-        `You're all set! ${sharedPhone} is now linked to this chat -- enter that number on the SAYWAY website and your sign-in code will come straight here.`,
+        `You're all set! ${sharedPhone} is now linked to this chat -- enter that number on the SAYPAID website and your sign-in code will come straight here.`,
         { reply_markup: { remove_keyboard: true } }
       );
       return new Response('ok');

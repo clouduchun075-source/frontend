@@ -14,7 +14,7 @@
 // elsewhere.
 
 export const DEFAULT_CATEGORIES = ['Outerwear', 'Knitwear', 'Accessories'];
-export const DEFAULT_BRANDS = ['SAYWAY CORE', 'SAYWAY BLACK LABEL'];
+export const DEFAULT_BRANDS = ['SAYPAID CORE', 'SAYPAID BLACK LABEL'];
 export const DEFAULT_TAGS = ['NEW ARRIVAL', 'LIMITED EDITION', 'LIMITED', 'POPULAR'];
 
 export interface ColorOption {

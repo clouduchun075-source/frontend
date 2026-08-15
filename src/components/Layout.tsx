@@ -150,7 +150,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           <div className="flex-1 md:flex-none flex justify-center md:justify-start">
             <Link to="/" className="text-2xl md:text-3xl font-black tracking-tight text-black dark:text-white hover:opacity-90 transition-opacity">
-              SAYWAY
+              SAYPAID
             </Link>
           </div>
 
@@ -225,7 +225,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         <div className="md:hidden w-full bg-neutral-50 dark:bg-neutral-950 border-t border-b border-neutral-100 dark:border-neutral-900 py-1.5 overflow-hidden transition-colors">
           <div className="text-[10px] tracking-[0.25em] uppercase text-neutral-500 dark:text-neutral-400 text-center font-medium animate-pulse">
-            Sayway — Hashamatli moda
+            Saypaid — Hashamatli moda
           </div>
         </div>
       </header>
@@ -240,7 +240,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           
           <div className="relative w-4/5 max-w-sm bg-white dark:bg-neutral-950 h-full shadow-2xl flex flex-col p-6 transition-transform duration-300 ease-out">
             <div className="flex items-center justify-between pb-6 border-b border-neutral-100 dark:border-neutral-800">
-              <span className="text-xl font-black tracking-tight text-black dark:text-white">SAYWAY</span>
+              <span className="text-xl font-black tracking-tight text-black dark:text-white">SAYPAID</span>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="p-2 text-black dark:text-white hover:opacity-70"
@@ -291,7 +291,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto flex flex-col space-y-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="flex flex-col space-y-4 text-black dark:text-white">
-              <span className="text-2xl font-black tracking-tight">SAYWAY</span>
+              <span className="text-2xl font-black tracking-tight">SAYPAID</span>
               <p className="text-xs text-neutral-400 dark:text-neutral-500 font-medium">KUTGANINGIZDAN YUQORI</p>
               <div className="flex items-center space-x-2 pt-2 text-xs font-semibold text-neutral-600 dark:text-neutral-400 hover:text-black dark:hover:text-white transition-colors">
                 <Send className="w-4 h-4" />
@@ -327,7 +327,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
 
           <div className="flex justify-between items-center pt-8 border-t border-neutral-100 dark:border-neutral-900 text-[10px] text-neutral-400 dark:text-neutral-500 uppercase font-semibold tracking-wider">
-            <span>&copy; 2026 SAYWAY LUXURY. BARCHA HUQUQLAR HIMOYALANGAN.</span>
+            <span>&copy; 2026 SAYPAID LUXURY. BARCHA HUQUQLAR HIMOYALANGAN.</span>
             <span className="cursor-pointer hover:text-black dark:hover:text-white transition-colors">
               GLOBAL | {lang === 'EN' ? 'ENGLISH' : lang === 'RU' ? 'РУССКИЙ' : 'O\'ZBEKCHA'}
             </span>
