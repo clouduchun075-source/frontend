@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { TelegramAuth } from '../components/TelegramAuth';
@@ -11,7 +12,7 @@ export const Auth = () => {
   const [mode, setMode] = useState<'login' | 'signup'>(
     location.pathname === '/signup' ? 'signup' : 'login'
   );
-  const [showPhoneOption, setShowPhoneOption] = useState(false);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -109,16 +110,12 @@ export const Auth = () => {
           <div className="flex-1 h-px bg-neutral-200 dark:bg-neutral-800" />
         </div>
 
-        {!showPhoneOption ? (
-          <button
-            onClick={() => setShowPhoneOption(true)}
-            className="w-full text-center text-xs font-bold text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white underline underline-offset-2"
-          >
-            Telefon raqam bilan {mode === 'login' ? 'kirish' : 'ro\'yxatdan o\'tish'}
-          </button>
-        ) : (
-          <TelegramAuth mode={mode} onSuccess={() => navigate(from)} />
-        )}
+        <button
+          onClick={() => setShowPhoneModal(true)}
+          className="w-full text-center text-xs font-bold text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white underline underline-offset-2"
+        >
+          Telefon raqam bilan {mode === 'login' ? 'kirish' : 'ro\'yxatdan o\'tish'}
+        </button>
 
         <p className="text-center">
           <button
@@ -129,6 +126,24 @@ export const Auth = () => {
           </button>
         </p>
       </div>
+
+      {/* Phone / Telegram sign-in modal */}
+      {showPhoneModal && (
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
+          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowPhoneModal(false)} />
+          <div className="relative bg-white dark:bg-neutral-900 w-full md:max-w-sm max-h-[92vh] overflow-y-auto rounded-t-3xl md:rounded-3xl p-6 md:p-8 shadow-2xl z-10">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-sm font-black uppercase tracking-widest text-black dark:text-white">
+                Telefon raqam bilan {mode === 'login' ? 'kirish' : 'ro\'yxatdan o\'tish'}
+              </h2>
+              <button onClick={() => setShowPhoneModal(false)} className="p-1 text-neutral-400 hover:text-black dark:hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <TelegramAuth mode={mode} onSuccess={() => { setShowPhoneModal(false); navigate(from); }} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

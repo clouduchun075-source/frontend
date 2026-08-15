@@ -14,6 +14,14 @@ import { corsHeaders } from '../_shared/cors.ts';
 
 const BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 
+const STATUS_LABELS: Record<string, { uz: string; ru: string; en: string }> = {
+  PENDING: { uz: 'Kutilmoqda', ru: 'Ожидается', en: 'Pending' },
+  PROCESSING: { uz: 'Jarayonda', ru: 'В обработке', en: 'Processing' },
+  SHIPPED: { uz: 'Yuborildi', ru: 'Отправлено', en: 'Shipped' },
+  DELIVERED: { uz: 'Yetkazildi', ru: 'Доставлено', en: 'Delivered' },
+  CANCELLED: { uz: 'Bekor qilindi', ru: 'Отменено', en: 'Cancelled' },
+};
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
@@ -60,14 +68,27 @@ Deno.serve(async (req) => {
     const itemsLines = (order.items || [])
       .map((i: { name: string; quantity: number }) => `• ${i.name} ×${i.quantity}`)
       .join('\n');
+    const total = Number(order.total ?? 0).toLocaleString('en-US');
+    const statusLabel = STATUS_LABELS[order.status] || { uz: order.status, ru: order.status, en: order.status };
 
     const text = [
-      `📦 *Order ${order.id}*`,
-      '',
-      `Status: *${order.status}*`,
+      `📦 *Buyurtma ${order.id}*`,
+      `Holati: *${statusLabel.uz}*`,
       itemsLines ? `\n${itemsLines}` : '',
-      `\nTotal: *$${Number(order.total ?? 0).toLocaleString('en-US')}*`,
-      '\nThank you for shopping with SAYPAID!',
+      `\nJami: *$${total}*`,
+      `SAYPAID'dan xarid qilganingiz uchun rahmat!`,
+      '',
+      `📦 *Заказ ${order.id}*`,
+      `Статус: *${statusLabel.ru}*`,
+      itemsLines ? `\n${itemsLines}` : '',
+      `\nИтого: *$${total}*`,
+      `Спасибо за покупку в SAYPAID!`,
+      '',
+      `📦 *Order ${order.id}*`,
+      `Status: *${statusLabel.en}*`,
+      itemsLines ? `\n${itemsLines}` : '',
+      `\nTotal: *$${total}*`,
+      `Thank you for shopping with SAYPAID!`,
     ].filter(Boolean).join('\n');
 
     const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {

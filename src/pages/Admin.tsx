@@ -185,7 +185,7 @@ const statusBadge = (s: string) => {
 };
 const STATUS_LABELS: Record<string, string> = {
   PENDING: 'Kutilmoqda',
-  PROCESSING: 'Qayta ishlanmoqda',
+  PROCESSING: 'Jarayonda',
   SHIPPED: 'Yuborildi',
   DELIVERED: 'Yetkazildi',
   CANCELLED: 'Bekor qilindi',
@@ -817,7 +817,7 @@ const orderBucket = (o: AdminOrder): 'new' | 'confirmed' | 'shipped' | 'cancelle
 
 const ORDER_SECTIONS: { key: 'new' | 'confirmed' | 'shipped' | 'cancelled'; label: string; hint: string; rowBg: string; badgeBg: string; dotColor: string }[] = [
   { key: 'new', label: 'Yangi buyurtmalar', hint: "Hozirgina joylashtirildi — mijoz hali o'zi bekor qilishi mumkin", rowBg: 'bg-amber-50/70 hover:bg-amber-50', badgeBg: 'bg-amber-100 text-amber-700', dotColor: 'bg-amber-400' },
-  { key: 'confirmed', label: 'Tasdiqlangan / Qayta ishlanmoqda', hint: "Bekor qilish muddati o'tdi, tayyorlanmoqda", rowBg: 'bg-white hover:bg-neutral-50/50', badgeBg: 'bg-blue-50 text-blue-700', dotColor: 'bg-blue-400' },
+  { key: 'confirmed', label: 'Tasdiqlangan / Jarayonda', hint: "Bekor qilish muddati o'tdi, tayyorlanmoqda", rowBg: 'bg-white hover:bg-neutral-50/50', badgeBg: 'bg-blue-50 text-blue-700', dotColor: 'bg-blue-400' },
   { key: 'shipped', label: 'Yuborilgan / Yetkazilgan', hint: 'Yo\'lda yoki yakunlangan', rowBg: 'bg-green-50/60 hover:bg-green-50', badgeBg: 'bg-green-100 text-green-700', dotColor: 'bg-green-400' },
   { key: 'cancelled', label: 'Bekor qilingan', hint: 'Mijoz yoki operator tomonidan bekor qilingan', rowBg: 'bg-red-50/70 hover:bg-red-50', badgeBg: 'bg-red-100 text-red-700', dotColor: 'bg-red-400' },
 ];
@@ -947,7 +947,7 @@ const OrdersTab = () => {
                         <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
                           <div className="flex items-center justify-end gap-2">
                             <select value={o.status} onChange={e => handleStatus(oid, e.target.value)} className="text-[10px] font-bold uppercase tracking-wider border border-neutral-200 px-2 py-1.5 bg-white cursor-pointer focus:outline-none focus:border-black">
-                              <option value="PENDING">Kutilmoqda</option><option value="PROCESSING">Qayta ishlanmoqda</option><option value="SHIPPED">Yuborildi</option><option value="DELIVERED">Yetkazildi</option><option value="CANCELLED">Bekor qilindi</option>
+                              <option value="PENDING">Kutilmoqda</option><option value="PROCESSING">Jarayonda</option><option value="SHIPPED">Yuborildi</option><option value="DELIVERED">Yetkazildi</option><option value="CANCELLED">Bekor qilindi</option>
                             </select>
                             <button
                               onClick={() => handleNotify(oid)}

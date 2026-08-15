@@ -18,9 +18,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN')!;
 
+// Bot messages go out in Uzbek / Russian / English together, since we don't
+// know the customer's preferred language at this point in the flow.
+function tri(uz: string, ru: string, en: string) {
+  return `🇺🇿 ${uz}\n\n🇷🇺 ${ru}\n\n🇬🇧 ${en}`;
+}
+
 const shareContactKeyboard = {
   reply_markup: {
-    keyboard: [[{ text: '📱 Share My Phone Number', request_contact: true }]],
+    keyboard: [[{ text: '📱 Raqamni yuborish / Отправить номер / Share number', request_contact: true }]],
     resize_keyboard: true,
     one_time_keyboard: true,
   },
@@ -52,7 +58,11 @@ Deno.serve(async (req) => {
         .single();
 
       if (!pending) {
-        await sendMessage(chatId, 'This verification link is invalid or has expired. Please try again in the app.');
+        await sendMessage(chatId, tri(
+          'Bu tasdiqlash havolasi yaroqsiz yoki muddati o\'tgan. Iltimos, ilovada qaytadan urinib ko\'ring.',
+          'Эта ссылка для подтверждения недействительна или истекла. Пожалуйста, попробуйте снова в приложении.',
+          'This verification link is invalid or has expired. Please try again in the app.'
+        ));
         return new Response('ok');
       }
 
@@ -63,7 +73,11 @@ Deno.serve(async (req) => {
 
       await sendMessage(
         chatId,
-        `Hi ${pending.full_name || ''}! To verify this is really your number, please share your phone number using the button below.`,
+        tri(
+          `Salom ${pending.full_name || ''}! Bu haqiqatan ham sizning raqamingiz ekanini tasdiqlash uchun, quyidagi tugma orqali telefon raqamingizni ulashing.`,
+          `Здравствуйте, ${pending.full_name || ''}! Чтобы подтвердить, что это действительно ваш номер, поделитесь своим номером телефона с помощью кнопки ниже.`,
+          `Hi ${pending.full_name || ''}! To verify this is really your number, please share your phone number using the button below.`
+        ),
         shareContactKeyboard
       );
       return new Response('ok');
@@ -73,7 +87,11 @@ Deno.serve(async (req) => {
     if (isPlainStart) {
       await sendMessage(
         chatId,
-        "Welcome to SAYPAID! Share your phone number now and you'll be able to sign in instantly on the website (or a future Telegram mini app) without coming back here.",
+        tri(
+          'SAYPAID\'ga xush kelibsiz! Hozir telefon raqamingizni ulashing va saytda (yoki kelajakdagi Telegram Mini App\'da) bu yerga qaytmasdan darhol tizimga kira olasiz.',
+          'Добро пожаловать в SAYPAID! Поделитесь номером телефона сейчас, и вы сможете мгновенно войти на сайт (или в будущее Telegram Mini App), не возвращаясь сюда.',
+          "Welcome to SAYPAID! Share your phone number now and you'll be able to sign in instantly on the website (or a future Telegram mini app) without coming back here."
+        ),
         shareContactKeyboard
       );
       return new Response('ok');
@@ -100,7 +118,11 @@ Deno.serve(async (req) => {
         if (normalize(contact.phone_number) !== normalize(pending.phone)) {
           await sendMessage(
             chatId,
-            "This Telegram account's phone number doesn't match the number you entered on the website. Please open the bot from the Telegram account registered to that number.",
+            tri(
+              'Bu Telegram hisobining telefon raqami saytda kiritgan raqamingizga mos kelmayapti. Iltimos, botni o\'sha raqamga ro\'yxatdan o\'tgan Telegram hisobidan oching.',
+              'Номер телефона этого аккаунта Telegram не совпадает с номером, который вы ввели на сайте. Пожалуйста, откройте бота с аккаунта Telegram, зарегистрированного на этот номер.',
+              "This Telegram account's phone number doesn't match the number you entered on the website. Please open the bot from the Telegram account registered to that number."
+            ),
             { reply_markup: { remove_keyboard: true } }
           );
           return new Response('ok');
@@ -120,7 +142,11 @@ Deno.serve(async (req) => {
 
         await sendMessage(
           chatId,
-          `Verified! Your code is:\n\n*${code}*\n\nEnter it in the app to finish. It expires in 5 minutes.`,
+          tri(
+            `Tasdiqlandi! Kodingiz:\n\n*${code}*\n\nYakunlash uchun uni ilovaga kiriting. 5 daqiqadan so'ng amal qilmay qoladi.`,
+            `Подтверждено! Ваш код:\n\n*${code}*\n\nВведите его в приложении, чтобы завершить. Срок действия — 5 минут.`,
+            `Verified! Your code is:\n\n*${code}*\n\nEnter it in the app to finish. It expires in 5 minutes.`
+          ),
           { reply_markup: { remove_keyboard: true } }
         );
         return new Response('ok');
@@ -135,14 +161,22 @@ Deno.serve(async (req) => {
 
       await sendMessage(
         chatId,
-        `You're all set! ${sharedPhone} is now linked to this chat -- enter that number on the SAYPAID website and your sign-in code will come straight here.`,
+        tri(
+          `Tayyor! ${sharedPhone} endi shu chatga ulandi -- SAYPAID saytida shu raqamni kiriting, kirish kodingiz to'g'ridan-to'g'ri shu yerga keladi.`,
+          `Готово! ${sharedPhone} теперь привязан к этому чату -- введите этот номер на сайте SAYPAID, и код входа придёт прямо сюда.`,
+          `You're all set! ${sharedPhone} is now linked to this chat -- enter that number on the SAYPAID website and your sign-in code will come straight here.`
+        ),
         { reply_markup: { remove_keyboard: true } }
       );
       return new Response('ok');
     }
 
     // ---- Anything else ----
-    await sendMessage(chatId, 'Press Start and share your phone number to link your Telegram account.');
+    await sendMessage(chatId, tri(
+      'Start tugmasini bosing va Telegram hisobingizni ulash uchun telefon raqamingizni ulashing.',
+      'Нажмите Start и поделитесь номером телефона, чтобы привязать аккаунт Telegram.',
+      'Press Start and share your phone number to link your Telegram account.'
+    ));
     return new Response('ok');
   } catch (e) {
     console.error(e);
