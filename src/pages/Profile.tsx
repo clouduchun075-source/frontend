@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { User, Package, Heart, Settings, LogOut, ChevronRight, Mail, Phone, MapPin, Trash2, X, Clock, MessageCircle, XCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { User, Package, Heart, Settings, LogOut, ChevronRight, Mail, Phone, MapPin, Trash2, X, Clock, MessageCircle, XCircle, Pencil } from 'lucide-react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart, ORDER_CANCEL_WINDOW_MS } from '../context/CartContext';
 import type { Order } from '../context/CartContext';
@@ -96,12 +96,21 @@ export const Profile = () => {
     name: (user?.user_metadata?.full_name as string) || user?.email?.split('@')[0] || 'Mehmon',
     email: user?.email || '',
     phone: user?.phone ? `+${user.phone}` : '',
-    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=200',
     memberSince: user?.created_at
       ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
       : '',
-    memberTier: 'BLACK LABEL',
   };
+
+  // No real profile photo is stored anywhere -- instead of a generic stock
+  // image that has nothing to do with the actual user, show their initials
+  // (falls back to a plain person outline if we somehow have no name at all).
+  const initials = userInfo.name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join('');
 
   // Controlled inputs for the Settings form -- kept in sync with the real
   // account values so "Save Changes" has something correct to persist.
@@ -122,6 +131,17 @@ export const Profile = () => {
     { id: 'locations' as const, label: 'Manzillar', icon: MapPin },
     { id: 'settings' as const, label: 'Sozlamalar', icon: Settings },
   ];
+
+  // Points at the section content (below the mobile tab bar) so switching
+  // tabs on mobile can smooth-scroll straight to it instead of leaving the
+  // user stuck looking at the tab bar and having to scroll down themselves.
+  const sectionContentRef = useRef<HTMLDivElement>(null);
+  const handleSectionChange = (id: typeof activeSection) => {
+    setActiveSection(id);
+    requestAnimationFrame(() => {
+      sectionContentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
 
   const [allProductsList, setAllProductsList] = useState<Product[]>([]);
 
@@ -353,16 +373,43 @@ export const Profile = () => {
 
           {/* Left Sidebar */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="border border-neutral-200 dark:border-neutral-800 p-6 md:p-8 flex flex-col items-center text-center space-y-4 bg-white dark:bg-neutral-950 transition-colors">
-              <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-neutral-200 dark:border-neutral-750">
-                <img src={userInfo.avatar} alt={userInfo.name} className="w-full h-full object-cover grayscale" />
+            <div className="relative border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 overflow-hidden transition-colors">
+              {/* Cover banner with a subtle dot pattern -- replaces the plain
+                  blank card top with something that has a bit of texture */}
+              <div className="relative h-20 md:h-24 bg-gradient-to-br from-neutral-800 via-neutral-700 to-black dark:from-neutral-200 dark:via-neutral-300 dark:to-white">
+                <div
+                  className="absolute inset-0 opacity-25"
+                  style={{ backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.7) 1px, transparent 0)', backgroundSize: '14px 14px' }}
+                />
+                <button
+                  onClick={() => handleSectionChange('settings')}
+                  className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/25 transition-colors focus:outline-none cursor-pointer"
+                >
+                  <Pencil className="w-3 h-3" />
+                  <span>Tahrirlash</span>
+                </button>
               </div>
-              <div className="space-y-1">
-                <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-black dark:text-white">{userInfo.name}</h2>
-                <span className="text-[9px] font-black uppercase tracking-widest bg-black dark:bg-white text-white dark:text-black px-3 py-1 inline-block">
-                  {userInfo.memberTier}
-                </span>
-              </div>
+
+              <div className="relative z-10 px-6 md:px-8 pb-6 md:pb-8 -mt-10 md:-mt-12 flex flex-col items-center text-center space-y-4">
+                {/* Initials Avatar -- no fake stock photo standing in for the
+                    real user; this always reflects who's actually signed in.
+                    `relative z-10` here makes sure it stacks above the
+                    (also positioned) cover banner instead of under it. */}
+                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-black dark:bg-white border-4 border-white dark:border-neutral-950 shadow-lg flex items-center justify-center">
+                  {initials ? (
+                    <span className="text-white dark:text-black text-2xl md:text-3xl font-black tracking-tight">{initials}</span>
+                  ) : (
+                    <User className="w-8 h-8 md:w-10 md:h-10 text-white dark:text-black stroke-[1.5]" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <h2 className="text-lg md:text-xl font-black uppercase tracking-tight text-black dark:text-white">{userInfo.name}</h2>
+                  {userInfo.memberSince && (
+                    <span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400 dark:text-neutral-500">
+                      A'zo: {userInfo.memberSince} dan beri
+                    </span>
+                  )}
+                </div>
               <div className="w-full space-y-2 pt-2 text-xs text-neutral-500 dark:text-neutral-450 font-medium">
                 <div className="flex items-center space-x-2 justify-center">
                   <Mail className="w-3.5 h-3.5 text-neutral-400" />
@@ -372,6 +419,7 @@ export const Profile = () => {
                   <Phone className="w-3.5 h-3.5 text-neutral-400" />
                   <span>{userInfo.phone}</span>
                 </div>
+              </div>
               </div>
             </div>
 
@@ -416,29 +464,43 @@ export const Profile = () => {
           {/* Right Content */}
           <div className="lg:col-span-8 bg-white dark:bg-neutral-900 transition-colors">
 
-            {/* Mobile Quick Actions */}
-            <div className="lg:hidden grid grid-cols-2 gap-3 mb-6">
-              {menuItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveSection(item.id)}
-                    className={`flex flex-col items-center justify-center py-5 border transition-all space-y-2 focus:outline-none ${
-                      activeSection === item.id 
-                        ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' 
-                        : 'bg-neutral-50 dark:bg-neutral-950 text-neutral-700 dark:text-neutral-300 border-neutral-150 dark:border-neutral-800'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5 stroke-[1.5]" />
-                    <span className="text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
-                    {item.id === 'wishlist' && wishlist.length > 0 && (
-                      <span className="text-[8px] bg-white dark:bg-black text-black dark:text-white px-1.5 py-0.5 rounded-full font-bold">{wishlist.length}</span>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Mobile Tab Bar -- a compact, sticky, horizontally-scrollable pill
+                bar instead of the old tall 2x3 button grid. It stays in view
+                right under the header, so it no longer eats up most of the
+                screen, and tapping a tab auto-scrolls straight to the section
+                content below (see handleSectionChange) instead of leaving the
+                user to scroll down manually. */}
+            <div className="lg:hidden sticky top-16 md:top-20 z-30 -mx-4 sm:-mx-6 px-4 sm:px-6 py-3 mb-6 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md border-b border-neutral-100 dark:border-neutral-800">
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                {menuItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = activeSection === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSectionChange(item.id)}
+                      className={`flex items-center gap-2 flex-shrink-0 px-4 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-widest transition-all duration-200 focus:outline-none ${
+                        active
+                          ? 'bg-black border-black text-white dark:bg-white dark:border-white dark:text-black shadow-md scale-[1.03]'
+                          : 'bg-neutral-50 dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 hover:border-neutral-300 dark:hover:border-neutral-700'
+                      }`}
+                    >
+                      <Icon className="w-3.5 h-3.5 stroke-[1.75]" />
+                      <span>{item.label}</span>
+                      {item.id === 'wishlist' && wishlist.length > 0 && (
+                        <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${active ? 'bg-white text-black dark:bg-black dark:text-white' : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'}`}>
+                          {wishlist.length}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            {/* Anchor the auto-scroll lands on -- scroll-mt keeps the sticky
+                tab bar from covering the section title once scrolled here */}
+            <div ref={sectionContentRef} className="scroll-mt-28" />
 
             {/* Overview Section */}
             {activeSection === 'overview' && (

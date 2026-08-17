@@ -63,7 +63,7 @@ export const Home = () => {
   return (
     <div className="flex flex-col bg-white dark:bg-neutral-900 transition-colors duration-300">
       {/* HERO SECTION */}
-      <section className="relative h-[80vh] md:h-[90vh] bg-neutral-950 overflow-hidden">
+      <section className="relative h-[58vh] md:h-[90vh] bg-neutral-950 overflow-hidden">
         <div className="absolute inset-0 bg-neutral-950">
           <img 
             src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&q=80&w=1200" 
@@ -73,7 +73,7 @@ export const Home = () => {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
         </div>
 
-        <div className="absolute inset-0 flex flex-col justify-end items-center text-center p-6 pb-20 md:pb-28 max-w-4xl mx-auto z-10">
+        <div className="absolute inset-0 flex flex-col justify-end items-center text-center p-6 pb-[105px] md:pb-28 max-w-4xl mx-auto z-10">
           <h1 className="text-4xl sm:text-5xl md:text-8xl font-extrabold tracking-tight text-white mb-4 uppercase leading-none">
             {t('hero_title_line1')}<br />{t('hero_title_line2')}
           </h1>
@@ -153,7 +153,7 @@ export const Home = () => {
           </div>
 
           {/* Mobile Arrivals Horizontal Scroll */}
-          <div className="md:hidden flex overflow-x-auto gap-6 scrollbar-hide">
+          <div className="md:hidden flex overflow-x-auto gap-3 scrollbar-hide">
             {mobileNewArrivals.map((prod) => (
               <ProductCard key={prod.id} product={prod} variant="scroll" />
             ))}
@@ -248,7 +248,7 @@ export const Home = () => {
           </div>
 
           {/* Mobile Most Popular Grid */}
-          <div className="md:hidden grid grid-cols-2 gap-4">
+          <div className="md:hidden grid grid-cols-2 gap-x-2.5 gap-y-3">
             {mobileMostPopular.map((prod) => (
               <ProductCard key={prod.id} product={prod} variant="popular" />
             ))}

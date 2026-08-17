@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth, isSupabaseConfigured } from '../context/AuthContext';
 import { TelegramAuth } from '../components/TelegramAuth';
 
 export const Auth = () => {
@@ -38,6 +38,16 @@ export const Auth = () => {
       const { error: err } = await signUp(email, password, fullName);
       setLoading(false);
       if (err) { setError(err); return; }
+
+      // No real Supabase project connected yet -- signUp() above already
+      // created a local preview session, so there's no separate "confirm
+      // your email, then log in" step to go through. Skip straight to the
+      // destination instead of bouncing the user to the login form.
+      if (!isSupabaseConfigured) {
+        navigate(from);
+        return;
+      }
+
       setInfo('Hisob yaratildi! Endi tizimga kirishingiz mumkin.');
       setMode('login');
       return;

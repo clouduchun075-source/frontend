@@ -176,7 +176,10 @@ const AdminPanel = ({ activeTab, setActiveTab, onLogout, onBack }: {
   );
 };
 
-const fmt = (n: number) => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// All admin figures are shown in Uzbek so'm now, matching the rest of the
+// site (product prices are still stored USD-basis internally at
+// 1 USD = 12,600 UZS -- see CartContext.formatPrice for the same rate).
+const fmt = (n: number) => Math.round(n * 12600).toLocaleString('uz-UZ') + " so'm";
 const statusBadge = (s: string) => {
   if (s === 'SHIPPED' || s === 'DELIVERED') return 'bg-green-50 text-green-700';
   if (s === 'PROCESSING') return 'bg-blue-50 text-blue-700';
@@ -579,15 +582,15 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl z-10">
+      <div className="relative bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl z-10">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-sm font-black uppercase tracking-widest">{product ? 'Mahsulotni tahrirlash' : "Mahsulot qo'shish"}</h2>
           <button onClick={onClose} className="p-1 text-neutral-400 hover:text-black"><X className="w-5 h-5" /></button>
         </div>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Nomi</label><input value={form.name} onChange={e => set('name', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Narxi ($)</label><input type="number" value={form.price} onChange={e => set('price', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Narxi (baza qiymati, so'mda ko'rsatiladi)</label><input type="number" value={form.price} onChange={e => set('price', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
           <div className="space-y-1.5">
             <label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Kategoriya</label>
@@ -611,7 +614,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
               isCustomOption={isCustomBrand}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Kichik sarlavha</label><input value={form.subtitle} onChange={e => set('subtitle', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Zaxira</label><input type="number" value={form.stock} onChange={e => set('stock', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
@@ -781,7 +784,7 @@ const ProductModal = ({ product, onClose, onSaved }: { product: Product | null; 
           </div>
 
           <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Tavsif</label><textarea value={form.description} onChange={e => set('description', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black min-h-[60px] resize-y" /></div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Material</label><input value={form.material} onChange={e => set('material', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Vazni</label><input value={form.weight} onChange={e => set('weight', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
@@ -897,12 +900,12 @@ const OrdersTab = () => {
         ].map(s => (<div key={s.label} className="bg-white border border-neutral-200 p-3 text-center"><div className="text-lg font-black">{s.count}</div><span className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">{s.label}</span></div>))}
       </div>
 
-      <div className="bg-white border border-neutral-200 px-5 py-3 flex items-center justify-between gap-3">
-        <div className="relative w-full md:w-72"><input type="text" placeholder="Buyurtmalarni qidirish..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-2.5 pr-10 focus:outline-none focus:border-black font-semibold" /><Search className="absolute right-3 top-2.5 w-4 h-4 text-neutral-400 stroke-[1.5]" /></div>
+      <div className="bg-white border border-neutral-200 px-5 py-3 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="relative w-full sm:w-72"><input type="text" placeholder="Buyurtmalarni qidirish..." value={search} onChange={e => setSearch(e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-4 py-2.5 pr-10 focus:outline-none focus:border-black font-semibold" /><Search className="absolute right-3 top-2.5 w-4 h-4 text-neutral-400 stroke-[1.5]" /></div>
         <button
           onClick={manualRefresh}
           disabled={refreshing}
-          className="flex-shrink-0 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500 border border-neutral-200 px-3 py-2.5 hover:border-black hover:text-black transition-colors disabled:opacity-50"
+          className="flex-shrink-0 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-neutral-500 border border-neutral-200 px-3 py-2.5 hover:border-black hover:text-black transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           Yangilash
@@ -997,7 +1000,7 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl z-10 rounded-2xl">
+      <div className="relative bg-white w-full max-w-lg max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl z-10 rounded-2xl">
         <div className="flex justify-between items-center mb-5">
           <div>
             <h2 className="text-sm font-black uppercase tracking-widest">{oid}</h2>
@@ -1019,7 +1022,7 @@ const OrderDetailModal = ({ order, onClose }: { order: Awaited<ReturnType<typeof
             <h3 className="text-[9px] font-black uppercase tracking-widest text-neutral-400 mb-2">Yetkazib berish ma'lumotlari</h3>
             {addr ? (
               <div className="bg-neutral-50 rounded-xl p-4 space-y-2 text-xs">
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Ism</span><span className="font-semibold text-black">{addr.first_name} {addr.last_name}</span></div>
                   <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Telefon</span><span className="font-semibold text-black">{addr.phone}</span></div>
                   <div><span className="text-neutral-400 block text-[9px] uppercase font-bold">Shahar</span><span className="font-semibold text-black">{addr.city}</span></div>
@@ -1211,9 +1214,9 @@ const AccountingTab = () => {
         ].map(s => (<div key={s.label} className="bg-white border border-neutral-200 p-4"><span className="text-[9px] font-black uppercase tracking-widest text-neutral-400 block mb-1">{s.label}</span><div className="text-lg font-black">{s.value}</div></div>))}
       </div>
       <div className="bg-white border border-neutral-200">
-        <div className="px-5 py-4 border-b border-neutral-100 flex justify-between items-center">
+        <div className="px-5 py-4 border-b border-neutral-100 flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
           <h3 className="text-xs font-black uppercase tracking-wider">Tranzaksiyalar</h3>
-          <button onClick={() => setShowModal(true)} className="flex items-center space-x-2 bg-black text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:opacity-90"><Plus className="w-3.5 h-3.5" /><span>Tranzaksiya qo'shish</span></button>
+          <button onClick={() => setShowModal(true)} className="flex items-center justify-center space-x-2 bg-black text-white px-4 py-2 text-[10px] font-bold uppercase tracking-widest hover:opacity-90"><Plus className="w-3.5 h-3.5" /><span>Tranzaksiya qo'shish</span></button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -1252,16 +1255,16 @@ const TransactionModal = ({ onClose, onSaved }: { onClose: () => void; onSaved: 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white w-full max-w-md p-6 shadow-2xl z-10">
+      <div className="relative bg-white w-full max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-2xl z-10">
         <div className="flex justify-between items-center mb-6"><h2 className="text-sm font-black uppercase tracking-widest">Tranzaksiya qo'shish</h2><button onClick={onClose} className="p-1 text-neutral-400 hover:text-black"><X className="w-5 h-5" /></button></div>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Turi</label>
               <select value={form.type} onChange={e => set('type', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"><option value="expense">Xarajat</option><option value="income">Daromad</option></select></div>
-            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Miqdori ($)</label>
+            <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Miqdori (baza qiymati, so'mda ko'rsatiladi)</label>
               <input type="number" value={form.amount} onChange={e => set('amount', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black" /></div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Kategoriya</label>
               <select value={form.category} onChange={e => set('category', e.target.value)} className="w-full bg-neutral-50 border border-neutral-200 text-xs px-3 py-2.5 focus:outline-none focus:border-black"><option value="supplies">Materiallar</option><option value="shipping">Yetkazib berish</option><option value="marketing">Marketing</option><option value="rent">Ijara</option><option value="other">Boshqa</option></select></div>
             <div className="space-y-1"><label className="text-[9px] font-bold uppercase tracking-widest text-neutral-400">Tavsif</label>

@@ -10,7 +10,7 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
-  const { cartCount, wishlist, lang, setLang, currency, setCurrency, t } = useCart();
+  const { cartCount, wishlist, lang, setLang, t } = useCart();
   const isAdminPage = location.pathname === '/admin';
 
   // Dark Mode state & persistence
@@ -29,22 +29,17 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Dropdown states for Top Bar
+  // Dropdown state for Top Bar
   const [isLangOpen, setIsLangOpen] = useState(false);
-  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
 
-  // Refs for outside click handling
+  // Ref for outside click handling
   const langRef = useRef<HTMLDivElement>(null);
-  const currencyRef = useRef<HTMLDivElement>(null);
 
-  // Handle outside clicks to close dropdowns
+  // Handle outside clicks to close the dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(event.target as Node)) {
         setIsLangOpen(false);
-      }
-      if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
-        setIsCurrencyOpen(false);
       }
     };
 
@@ -71,15 +66,16 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-white dark:bg-neutral-900 text-black dark:text-neutral-100 antialiased font-sans select-none transition-colors duration-300">
       
-      {/* 1. TOP BAR (Localization & Currency Switchers) */}
+      {/* 1. TOP BAR (Localization) -- currency switching was removed since
+          every price on the site is always shown in Uzbek so'm (UZS) now */}
       {!isAdminPage && (
         <div className="w-full bg-neutral-50 dark:bg-neutral-950 text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-neutral-900 py-2.5 px-4 sm:px-6 lg:px-8 flex justify-end items-center text-[10px] tracking-widest uppercase font-semibold transition-colors duration-300 relative z-[60]">
-          
+
           <div className="flex items-center space-x-6">
             {/* Language Selector */}
             <div className="relative" ref={langRef}>
-              <button 
-                onClick={() => { setIsLangOpen(!isLangOpen); setIsCurrencyOpen(false); }}
+              <button
+                onClick={() => setIsLangOpen(!isLangOpen)}
                 className="hover:text-black dark:hover:text-white flex items-center gap-1 transition-colors duration-150 focus:outline-none cursor-pointer"
               >
                 <span>{lang}</span>
@@ -99,35 +95,6 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                       }`}
                     >
                       {l}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Currency Selector */}
-            <div className="relative" ref={currencyRef}>
-              <button 
-                onClick={() => { setIsCurrencyOpen(!isCurrencyOpen); setIsLangOpen(false); }}
-                className="hover:text-black dark:hover:text-white flex items-center gap-1 transition-colors duration-150 focus:outline-none cursor-pointer"
-              >
-                <span>{currency}</span>
-                <span className="text-[7px] opacity-60">▼</span>
-              </button>
-              {isCurrencyOpen && (
-                <div className="absolute right-0 mt-2 w-20 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-md shadow-lg z-50 flex flex-col py-1 transition-all">
-                  {(['USD', 'UZS'] as const).map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => {
-                        setCurrency(c);
-                        setIsCurrencyOpen(false);
-                      }}
-                      className={`text-[10px] px-3 py-2 font-bold tracking-wider hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors w-full text-left cursor-pointer ${
-                        currency === c ? 'text-black dark:text-white font-black' : 'text-neutral-400 dark:text-neutral-500'
-                      }`}
-                    >
-                      {c}
                     </button>
                   ))}
                 </div>

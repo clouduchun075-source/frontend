@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { allProducts as fallbackProducts } from './products';
 
 export interface Product {
   id: string;
@@ -121,28 +122,37 @@ function productToRow(data: Partial<Product>) {
 
 // ---- PRODUCTS ----
 export async function getProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: true });
-  if (error) {
-    console.error('getProducts error:', error);
-    return [];
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    // No Supabase project connected yet (or the table is genuinely empty) --
+    // fall back to the local sample catalog so the UI has products to show
+    // while working on design locally.
+    if (!data || data.length === 0) return fallbackProducts as Product[];
+    return data.map(rowToProduct);
+  } catch (err) {
+    console.error('getProducts error, using local fallback products:', err);
+    return fallbackProducts as Product[];
   }
-  return (data ?? []).map(rowToProduct);
 }
 
 export async function getProductById(id: string): Promise<Product | undefined> {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
-  if (error) {
-    console.error('getProductById error:', error);
-    return undefined;
+  try {
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+    if (error) throw error;
+    if (data) return rowToProduct(data);
+    return fallbackProducts.find(p => p.id === id) as Product | undefined;
+  } catch (err) {
+    console.error('getProductById error, using local fallback products:', err);
+    return fallbackProducts.find(p => p.id === id) as Product | undefined;
   }
-  return data ? rowToProduct(data) : undefined;
 }
 
 export async function saveProduct(data: Omit<Product, 'id'> & { id?: string }): Promise<Product | null> {

@@ -54,11 +54,10 @@ interface CartContextType {
   walletBalance: number;
   addToWallet: (amount: number) => void;
   spendWallet: (amount: number) => boolean;
-  // Dynamic Localization & Currency Switching
+  // Dynamic Localization -- currency switching was removed, every price is
+  // always shown in Uzbek so'm (UZS) now, so there's nothing to toggle.
   lang: 'EN' | 'RU' | 'UZ';
   setLang: (lang: 'EN' | 'RU' | 'UZ') => void;
-  currency: 'USD' | 'UZS';
-  setCurrency: (currency: 'USD' | 'UZS') => void;
   formatPrice: (priceInUSD: number) => string;
   t: (key: TranslationKey) => string;
 }
@@ -167,12 +166,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => clearInterval(interval);
   }, [user?.id]);
 
-  // Localization and Currency States (shared across accounts on this device)
+  // Localization state (shared across accounts on this device)
   const [lang, setLang] = useState<'EN' | 'RU' | 'UZ'>(() =>
     loadFromStorage<'EN' | 'RU' | 'UZ'>('sayway_lang', 'UZ')
-  );
-  const [currency, setCurrency] = useState<'USD' | 'UZS'>(() =>
-    loadFromStorage<'USD' | 'UZS'>('sayway_currency', 'USD')
   );
 
   useEffect(() => {
@@ -199,17 +195,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.setItem('sayway_lang', JSON.stringify(lang));
   }, [lang]);
 
-  useEffect(() => {
-    localStorage.setItem('sayway_currency', JSON.stringify(currency));
-  }, [currency]);
-
-  // Currency Conversion logic: 1 USD = 12,600 UZS (minimalist standard streetwear conversion)
+  // Currency: prices are always shown in Uzbek so'm (UZS) --
+  // 1 USD = 12,600 UZS (minimalist standard streetwear conversion)
   const formatPrice = (priceInUSD: number): string => {
-    if (currency === 'UZS') {
-      const priceInUZS = priceInUSD * 12600;
-      return priceInUZS.toLocaleString('uz-UZ') + ' UZS';
-    }
-    return '$' + priceInUSD.toLocaleString('en-US');
+    const priceInUZS = priceInUSD * 12600;
+    return priceInUZS.toLocaleString('uz-UZ') + ' so\'m';
   };
 
   // Dynamic Translation helper
@@ -382,8 +372,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         spendWallet,
         lang,
         setLang,
-        currency,
-        setCurrency,
         formatPrice,
         t,
       }}
